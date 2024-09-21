@@ -1,8 +1,8 @@
 ﻿namespace ClickHouse.Client.BulkExtension.Types;
 
-static class EnumerableType<T>
+static class EnumerableType
 {
-    public static void WriteCount(BinaryWriter writer, IEnumerable<T>? enumerable)
+    public static void WriteCount<T>(BinaryWriter writer, IEnumerable<T>? enumerable)
     {
         if (enumerable is null)
         {

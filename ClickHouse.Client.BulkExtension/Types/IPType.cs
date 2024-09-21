@@ -15,14 +15,17 @@ class IPType
     {
         if (value.AddressFamily == AddressFamily.InterNetwork)
         {
-            var ipv4bytes = value.GetAddressBytes();
-            Array.Reverse(ipv4bytes);
-            writer.Write(ipv4bytes, 0, ipv4bytes.Length);
+            Span<byte> buffer = stackalloc byte[4];
+            value.TryWriteBytes(buffer, out _);
+            buffer.Reverse();
+            writer.Write(buffer);
         }
         else if (value.AddressFamily != AddressFamily.InterNetworkV6)
         {
-            var ipv6bytes = value.GetAddressBytes();
-            writer.Write(ipv6bytes, 0, ipv6bytes.Length);
+            Span<byte> buffer = stackalloc byte[16];
+            value.TryWriteBytes(buffer, out _);
+            buffer.Reverse();
+            writer.Write(buffer);
         }
         else
         {

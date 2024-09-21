@@ -1,9 +1,8 @@
 ﻿using System.Reflection;
-using ClickHouse.Client.BulkExtension.Types.Base;
 
 namespace ClickHouse.Client.BulkExtension.Types;
 
-class Int16Type : IntegerType
+class Int16Type
 {
     public static readonly MethodInfo WriteMethod = typeof(Int16Type).GetMethod(nameof(Write), BindingFlags.Public | BindingFlags.Instance)!;
     public static readonly Int16Type Instance = new Int16Type();

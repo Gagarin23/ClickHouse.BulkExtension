@@ -14,23 +14,24 @@ public readonly struct ClickHouseDecimal
     /// <summary>
     ///     Sets the global maximum precision of division operations.
     /// </summary>
-    public static int MaxDivisionPrecision = 50;
+    public static readonly int MaxDivisionPrecision = 50;
 
     public ClickHouseDecimal(decimal value)
         : this()
     {
         // Slightly wasteful, but seems to be the cheapest way to get scale
-        var parts = decimal.GetBits(value);
+        Span<int> parts = stackalloc int[4];
+        decimal.GetBits(value, parts);
         var scale = parts[3] >> 16 & 0x7F;
-        var negative = (parts[3] & 0x80000000) != 0;
+        var isNegative = (parts[3] & 0x80000000) != 0;
 
-        var data = new byte[3 * sizeof(int) + 1];
-        WriteIntToArray(parts[0], data, 0);
-        WriteIntToArray(parts[1], data, sizeof(int));
-        WriteIntToArray(parts[2], data, 2 * sizeof(int));
+        Span<byte> data = stackalloc byte[3 * sizeof(int) + 1];
+        WriteInt(parts[0], data, 0);
+        WriteInt(parts[1], data, sizeof(int));
+        WriteInt(parts[2], data, 2 * sizeof(int));
 
         var mantissa = new BigInteger(data);
-        if (negative)
+        if (isNegative)
             mantissa = BigInteger.Negate(mantissa);
 
         Mantissa = mantissa;
@@ -159,7 +160,9 @@ public readonly struct ClickHouseDecimal
             mantissa = BigInteger.Negate(mantissa);
         }
 
-        var numberBytes = mantissa.ToByteArray();
+        var bytesCount = mantissa.GetByteCount();
+        Span<byte> numberBytes = stackalloc byte[bytesCount];
+        mantissa.TryWriteBytes(numberBytes, out _);
         switch (numberBytes.Length)
         {
             case 13 when numberBytes[12] == 0:
@@ -169,113 +172,15 @@ public readonly struct ClickHouseDecimal
                 break;
         }
 
-        var data = new byte[3 * sizeof(int)];
-        Buffer.BlockCopy(numberBytes, 0, data, 0, Math.Min(numberBytes.Length, 12));
+        Span<byte> data = stackalloc byte[3 * sizeof(int)];
+        numberBytes.CopyTo(data);
 
-        var part0 = BitConverter.ToInt32(data, 0);
-        var part1 = BitConverter.ToInt32(data, 4);
-        var part2 = BitConverter.ToInt32(data, 8);
+        var part0 = BitConverter.ToInt32(data);
+        var part1 = BitConverter.ToInt32(data[4..]);
+        var part2 = BitConverter.ToInt32(data[8..]);
 
         var result = new decimal(part0, part1, part2, negative, (byte)scale);
         return result;
-    }
-
-    public static explicit operator int(ClickHouseDecimal value)
-    {
-        return (int)(value.Mantissa / BigInteger.Pow(10, value.Scale));
-    }
-
-    public static explicit operator uint(ClickHouseDecimal value)
-    {
-        return (uint)(value.Mantissa / BigInteger.Pow(10, value.Scale));
-    }
-
-    public static explicit operator long(ClickHouseDecimal value)
-    {
-        return (long)(value.Mantissa / BigInteger.Pow(10, value.Scale));
-    }
-
-    public static explicit operator ulong(ClickHouseDecimal value)
-    {
-        return (ulong)(value.Mantissa / BigInteger.Pow(10, value.Scale));
-    }
-
-    public static ClickHouseDecimal operator +(ClickHouseDecimal left, ClickHouseDecimal right)
-    {
-        var scale = Math.Max(left.Scale, right.Scale);
-        var left_mantissa = ScaleMantissa(left, scale);
-        var right_mantissa = ScaleMantissa(right, scale);
-
-        return new ClickHouseDecimal(left_mantissa + right_mantissa, scale);
-    }
-
-    public static ClickHouseDecimal operator -(ClickHouseDecimal left, ClickHouseDecimal right)
-    {
-        var scale = Math.Max(left.Scale, right.Scale);
-        var left_mantissa = ScaleMantissa(left, scale);
-        var right_mantissa = ScaleMantissa(right, scale);
-
-        return new ClickHouseDecimal(left_mantissa - right_mantissa, scale);
-    }
-
-    public static ClickHouseDecimal operator *(ClickHouseDecimal left, ClickHouseDecimal right)
-    {
-        return new ClickHouseDecimal(left.Mantissa * right.Mantissa, left.Scale + right.Scale);
-    }
-
-    public static ClickHouseDecimal operator /(ClickHouseDecimal dividend, ClickHouseDecimal divisor)
-    {
-        var dividend_mantissa = dividend.Mantissa;
-        var divisor_mantissa = divisor.Mantissa;
-
-        var bias = MaxDivisionPrecision - (NumberOfDigits(dividend_mantissa) - NumberOfDigits(divisor_mantissa));
-        bias = Math.Max(0, bias);
-
-        dividend_mantissa *= BigInteger.Pow(10, bias);
-
-        var result_mantissa = dividend_mantissa / divisor_mantissa;
-        var result_scale = dividend.Scale - divisor.Scale + bias;
-        Normalize(ref result_mantissa, ref result_scale);
-        return new ClickHouseDecimal(result_mantissa, result_scale);
-    }
-
-    public static ClickHouseDecimal operator %(ClickHouseDecimal dividend, ClickHouseDecimal divisor)
-    {
-        var scale = Math.Max(dividend.Scale, divisor.Scale);
-        var dividend_mantissa = ScaleMantissa(dividend, scale);
-        var divisor_mantissa = ScaleMantissa(divisor, scale);
-
-        return new ClickHouseDecimal(dividend_mantissa % divisor_mantissa, scale);
-    }
-
-    public static bool operator ==(ClickHouseDecimal left, ClickHouseDecimal right)
-    {
-        return left.CompareTo(right) == 0;
-    }
-
-    public static bool operator !=(ClickHouseDecimal left, ClickHouseDecimal right)
-    {
-        return left.CompareTo(right) != 0;
-    }
-
-    public static bool operator <(ClickHouseDecimal left, ClickHouseDecimal right)
-    {
-        return left.CompareTo(right) < 0;
-    }
-
-    public static bool operator >(ClickHouseDecimal left, ClickHouseDecimal right)
-    {
-        return left.CompareTo(right) > 0;
-    }
-
-    public static bool operator <=(ClickHouseDecimal left, ClickHouseDecimal right)
-    {
-        return left.CompareTo(right) <= 0;
-    }
-
-    public static bool operator >=(ClickHouseDecimal left, ClickHouseDecimal right)
-    {
-        return left.CompareTo(right) >= 0;
     }
 
     public bool Equals(ClickHouseDecimal other)
@@ -326,8 +231,7 @@ public readonly struct ClickHouseDecimal
         return value.Mantissa * BigInteger.Pow(10, scale - value.Scale);
     }
 
-    private static void WriteIntToArray(int value, byte[] array,
-        int index)
+    private static void WriteInt(int value, Span<byte> array, int index)
     {
         array[index + 0] = (byte)value;
         array[index + 1] = (byte)(value >> 8);

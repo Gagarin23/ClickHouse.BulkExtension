@@ -2,6 +2,10 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClickHouse.Client.BulkExtension", "ClickHouse.Client.BulkExtension\ClickHouse.Client.BulkExtension.csproj", "{281B131F-98C2-487D-B0B1-92EBD707554B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClickHouse.Client.BulkExtension.Tests", "ClickHouse.Client.BulkExtension.Tests\ClickHouse.Client.BulkExtension.Tests.csproj", "{66BC6F91-0505-46EA-804D-33944D176FF8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClickHouse.Client.BulkExtension.Benchmarks", "ClickHouse.Client.BulkExtension.Benchmarks\ClickHouse.Client.BulkExtension.Benchmarks.csproj", "{F1B45676-070B-48DE-8352-FEB08D617F73}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +16,13 @@ Global
 		{281B131F-98C2-487D-B0B1-92EBD707554B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{281B131F-98C2-487D-B0B1-92EBD707554B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{281B131F-98C2-487D-B0B1-92EBD707554B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{66BC6F91-0505-46EA-804D-33944D176FF8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{66BC6F91-0505-46EA-804D-33944D176FF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{66BC6F91-0505-46EA-804D-33944D176FF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{66BC6F91-0505-46EA-804D-33944D176FF8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F1B45676-070B-48DE-8352-FEB08D617F73}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1B45676-070B-48DE-8352-FEB08D617F73}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1B45676-070B-48DE-8352-FEB08D617F73}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1B45676-070B-48DE-8352-FEB08D617F73}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

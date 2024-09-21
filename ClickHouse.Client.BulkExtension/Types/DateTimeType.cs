@@ -1,63 +1,64 @@
 ﻿using System.Reflection;
-using ClickHouse.Client.BulkExtension.Types.Base;
-using NodaTime;
+using ClickHouse.Client.BulkExtension.Annotation;
 
 namespace ClickHouse.Client.BulkExtension.Types;
 
-class DateTimeType<T> : AbstractDateTimeType
+class DateTimeType<T>
     where T : struct
 {
     public static readonly MethodInfo WriteMethod = typeof(DateTimeType<T>).GetMethod(nameof(Write), BindingFlags.Public | BindingFlags.Instance)!;
+    public static readonly DateTimeType<T> DateTime64Second = new(DateTimePrecision.Second);
+    public static readonly DateTimeType<T> DateTime64Millisecond = new(DateTimePrecision.Millisecond);
+    public static readonly DateTimeType<T> DateTime64Microsecond = new(DateTimePrecision.Microsecond);
+    public static readonly DateTimeType<T> DateTime64Nanosecond = new(DateTimePrecision.Nanosecond);
 
-    public int Scale { get; }
+    private readonly byte _precision;
 
-    public DateTimeType(int scale)
+    public DateTimeType(DateTimePrecision precision)
     {
-        Scale = scale;
+        _precision = (byte)precision;
     }
 
-    public virtual void Write(BinaryWriter writer, T value)
+    public void Write(BinaryWriter writer, T value)
     {
-        writer.Write(ToClickHouseTicks(Instant.FromDateTimeOffset(CoerceToDateTimeOffset(value))));
+        var dateTimeOffset = ToDateTimeOffset(value);
+
+        // Вычисляем множитель для precision
+        var multiplier = GetDateTime64Multiplier();
+
+        // Получаем Unix-время в секундах и умножаем на множитель
+        var unixTimeSeconds = dateTimeOffset.ToUnixTimeSeconds();
+        var unixTimeScaled = unixTimeSeconds * multiplier;
+
+        // Вычисляем дробную часть секунд и масштабируем ее
+        var fractionalTicks = dateTimeOffset.Ticks % TimeSpan.TicksPerSecond;
+        var fractional = fractionalTicks * multiplier / TimeSpan.TicksPerSecond;
+
+        // Итоговое значение времени
+        var unixTime = unixTimeScaled + fractional;
+
+        // Записываем значение как Int64 в порядке Little-Endian
+        writer.Write(unixTime);
     }
 
-    private long ToClickHouseTicks(Instant instant)
+    private long GetDateTime64Multiplier()
     {
-        return ShiftDecimalPlaces(instant.ToUnixTimeTicks(), Scale - 7);
-    }
-
-    private long ShiftDecimalPlaces(long value, int places)
-    {
-        if (places == 0)
+        long multiplier = 1;
+        for (int i = 0; i < _precision; i++)
         {
-            return value;
+            multiplier *= 10;
         }
-
-        var factor = ToPower(10, Math.Abs(places));
-        return places < 0 ? value / factor : value * factor;
+        return multiplier;
     }
 
-    private long ToPower(int value, int power)
+    private DateTimeOffset ToDateTimeOffset(T value)
     {
-        checked
+        return value switch
         {
-            long result = 1;
-            while (power > 0)
-            {
-                if ((power & 1) == 1)
-                {
-                    result *= value;
-                }
-
-                power >>= 1;
-                if (power <= 0)
-                {
-                    break;
-                }
-
-                value *= value;
-            }
-            return result;
-        }
+            DateTimeOffset v => v,
+            DateTime dt      => new DateTimeOffset(dt),
+            DateOnly date    => new DateTimeOffset(date.Year, date.Month, date.Day, 0, 0, 0, TimeSpan.Zero),
+            _                => throw new NotSupportedException()
+        };
     }
 }
