@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <TargetFrameworks>net8.0;net6.0;net7.0</TargetFrameworks>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="DotNext.Metaprogramming" Version="4.15.0" />
+    </ItemGroup>
+
+</Project>
