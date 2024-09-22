@@ -9,28 +9,40 @@ namespace ClickHouse.BulkExtension.Benchmarks;
 
 /*
 
-| Method                   | Count   | Mean        | Error     | StdDev    | Allocated    |
-|------------------------- |-------- |------------:|----------:|----------:|-------------:|
-| BulkInsertInt64          | 10000   |    50.91 ms |  0.698 ms |  0.583 ms |    949.67 KB |
-| NewBulkInsertInt64       | 10000   |    51.94 ms |  1.010 ms |  1.240 ms |     84.52 KB |
-| BulkInsertEntity         | 10000   |    35.98 ms |  2.205 ms |  6.467 ms |   7133.22 KB |
-| NewBulkInsertEntity      | 10000   |    60.88 ms |  1.044 ms |  0.977 ms |     11.11 KB |
-| NewAsyncBulkInsertEntity | 10000   |    60.17 ms |  0.670 ms |  0.594 ms |     10.92 KB |
-| BulkInsertInt64          | 100000  |    44.02 ms |  1.431 ms |  4.219 ms |   6767.49 KB |
-| NewBulkInsertInt64       | 100000  |    51.20 ms |  0.877 ms |  0.861 ms |     80.91 KB |
-| BulkInsertEntity         | 100000  |   196.51 ms |  3.248 ms |  3.038 ms |  69206.82 KB |
-| NewBulkInsertEntity      | 100000  |   195.85 ms |  3.527 ms |  3.299 ms |      11.9 KB |
-| NewAsyncBulkInsertEntity | 100000  |   198.49 ms |  2.355 ms |  2.202 ms |      11.6 KB |
-| BulkInsertInt64          | 300000  |    36.55 ms |  0.978 ms |  2.837 ms |  20777.17 KB |
-| NewBulkInsertInt64       | 300000  |    61.92 ms |  1.006 ms |  0.941 ms |     83.67 KB |
-| BulkInsertEntity         | 300000  |   582.59 ms | 11.555 ms | 14.613 ms | 208255.91 KB |
-| NewBulkInsertEntity      | 300000  |   501.29 ms |  3.488 ms |  3.262 ms |      14.1 KB |
-| NewAsyncBulkInsertEntity | 300000  |   504.80 ms |  6.705 ms |  6.272 ms |     12.54 KB |
-| BulkInsertInt64          | 1000000 |   104.55 ms |  1.811 ms |  1.694 ms |  63155.59 KB |
-| NewBulkInsertInt64       | 1000000 |   100.47 ms |  1.552 ms |  1.452 ms |     80.37 KB |
-| BulkInsertEntity         | 1000000 | 1,913.12 ms | 36.577 ms | 30.543 ms | 688518.85 KB |
-| NewBulkInsertEntity      | 1000000 | 1,537.88 ms | 27.933 ms | 24.762 ms |     13.73 KB |
-| NewAsyncBulkInsertEntity | 1000000 | 1,553.87 ms | 11.480 ms | 10.177 ms |     12.21 KB |
+BenchmarkDotNet v0.14.0, Windows 11 (10.0.22631.4169/23H2/2023Update/SunValley3)
+AMD Ryzen 7 5800X, 1 CPU, 16 logical and 8 physical cores
+.NET SDK 8.0.108
+  [Host]     : .NET 8.0.8 (8.0.824.36612), X64 RyuJIT AVX2
+  Job-WWETBA : .NET 8.0.8 (8.0.824.36612), X64 RyuJIT AVX2
+
+Server=True
+
+| Method                     | Count   | Mean        | Error     | StdDev    | Allocated    |
+|--------------------------- |-------- |------------:|----------:|----------:|-------------:|
+| BulkInsertInt64            | 10000   |    50.38 ms |  0.934 ms |  0.828 ms |    949.69 KB |
+| NewBulkInsertInt64         | 10000   |    51.95 ms |  1.009 ms |  1.541 ms |     10.18 KB |
+| BulkInsertEntity           | 10000   |    31.05 ms |  1.643 ms |  4.713 ms |   7211.42 KB |
+| NewBulkInsertEntity        | 10000   |    60.53 ms |  0.969 ms |  0.907 ms |     10.85 KB |
+| NewGenericBulkInsertEntity | 10000   |    60.50 ms |  0.992 ms |  0.928 ms |     10.95 KB |
+| NewAsyncBulkInsertEntity   | 10000   |    61.03 ms |  1.203 ms |  1.182 ms |     10.98 KB |
+| BulkInsertInt64            | 100000  |    46.73 ms |  1.114 ms |  3.285 ms |   6767.41 KB |
+| NewBulkInsertInt64         | 100000  |    50.13 ms |  0.467 ms |  0.390 ms |     10.18 KB |
+| BulkInsertEntity           | 100000  |   195.88 ms |  2.925 ms |  2.443 ms |  69989.35 KB |
+| NewBulkInsertEntity        | 100000  |   199.56 ms |  0.663 ms |  0.517 ms |     11.25 KB |
+| NewGenericBulkInsertEntity | 100000  |   202.97 ms |  3.573 ms |  3.342 ms |      11.4 KB |
+| NewAsyncBulkInsertEntity   | 100000  |   203.63 ms |  2.501 ms |  2.217 ms |     11.55 KB |
+| BulkInsertInt64            | 300000  |    38.08 ms |  1.163 ms |  3.411 ms |  20777.15 KB |
+| NewBulkInsertInt64         | 300000  |    60.05 ms |  0.526 ms |  0.466 ms |     10.24 KB |
+| BulkInsertEntity           | 300000  |   582.16 ms |  3.772 ms |  3.150 ms | 210602.02 KB |
+| NewBulkInsertEntity        | 300000  |   518.25 ms |  7.639 ms |  7.145 ms |     12.77 KB |
+| NewGenericBulkInsertEntity | 300000  |   516.85 ms | 10.327 ms | 10.143 ms |     11.17 KB |
+| NewAsyncBulkInsertEntity   | 300000  |   526.12 ms |  6.693 ms |  6.261 ms |     13.41 KB |
+| BulkInsertInt64            | 1000000 |   104.73 ms |  2.023 ms |  2.559 ms |  63155.63 KB |
+| NewBulkInsertInt64         | 1000000 |   100.03 ms |  0.727 ms |  0.607 ms |     10.49 KB |
+| BulkInsertEntity           | 1000000 | 2,007.25 ms | 30.629 ms | 28.651 ms | 696371.72 KB |
+| NewBulkInsertEntity        | 1000000 | 1,599.89 ms |  5.920 ms |  5.538 ms |     12.23 KB |
+| NewGenericBulkInsertEntity | 1000000 | 1,602.88 ms | 10.287 ms |  9.622 ms |     13.41 KB |
+| NewAsyncBulkInsertEntity   | 1000000 | 1,618.87 ms |  7.156 ms |  6.344 ms |     13.45 KB |
 
  */
 
