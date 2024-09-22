@@ -1,16 +1,16 @@
-﻿using System.Reflection;
+﻿using System.Buffers.Binary;
 
 namespace ClickHouse.Client.BulkExtension.Types;
 
 class Float64Type
 {
-    public static readonly MethodInfo WriteMethod = typeof(Float64Type).GetMethod(nameof(Write), BindingFlags.Public | BindingFlags.Instance)!;
     public static readonly Float64Type Instance = new Float64Type();
 
     private Float64Type() { }
 
-    public void Write(BinaryWriter writer, double value)
+    public int Write(Memory<byte> buffer, double value)
     {
-        writer.Write(value);
+        BinaryPrimitives.WriteDoubleLittleEndian(buffer.Span[..sizeof(double)], value);
+        return sizeof(double);
     }
 }

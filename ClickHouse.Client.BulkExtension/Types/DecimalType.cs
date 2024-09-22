@@ -4,11 +4,8 @@ using ClickHouse.Client.BulkExtension.Numerics;
 
 namespace ClickHouse.Client.BulkExtension.Types;
 
-class DecimalType
+readonly struct DecimalType
 {
-    public static readonly MethodInfo DecimalWriteMethod = typeof(DecimalType).GetMethod(nameof(Write), BindingFlags.Public | BindingFlags.Instance, new []{typeof(BinaryWriter), typeof(decimal)})!;
-    public static readonly MethodInfo ClickHouseDecimalWriteMethod = typeof(DecimalType).GetMethod(nameof(Write), BindingFlags.Public | BindingFlags.Instance, new []{typeof(BinaryWriter), typeof(ClickHouseDecimal)})!;
-
     private readonly int _precision;
     private readonly int _scale;
 
@@ -23,44 +20,42 @@ class DecimalType
     /// </summary>
     private int Size => GetSizeFromPrecision(_precision);
 
-    public void Write(BinaryWriter writer, decimal value)
+    public int Write(Memory<byte> buffer, decimal value)
     {
         // Масштабируем значение
-        decimal scaledValue = ScaleDecimal(value, _scale);
+        var scaledValue = ScaleDecimal(value, _scale);
 
         switch (_precision)
         {
             // В зависимости от precision выбираем тип данных
             // Decimal32
             case <= 9:
-                int intValue = decimal.ToInt32(scaledValue);
-                writer.Write(intValue);
-                break;
+                var intValue = decimal.ToInt32(scaledValue);
+                return Int32Type.Instance.Write(buffer, intValue);
             // Decimal64
             case <= 18:
-                long longValue = decimal.ToInt64(scaledValue);
-                writer.Write(longValue);
-                break;
+                var longValue = decimal.ToInt64(scaledValue);
+                return Int64Type.Instance.Write(buffer, longValue);
             // Используем decimal и записываем 128 бит (16 байт)
             case <= 29:
-                // Получаем биты decimal без выделения массива
+                // Получаем биты decimal
                 Decimal128Bits bits = new Decimal128Bits(scaledValue);
 
-                // Записываем 16 байт в порядке little-endian
-                writer.Write(bits.Low64);  // Нижние 64 бита
-                writer.Write(bits.High64); // Верхние 64 бита
-                break;
+                // little-endian
+                var written = UInt64Type.Instance.Write(buffer, bits.Low64);  // Нижние 64 бита
+                written += UInt64Type.Instance.Write(buffer[written..], bits.High64); // Верхние 64 бита
+                return written;
             default:
-                throw new NotSupportedException("Превышена максимальная точность для данного метода.");
+                throw new NotSupportedException("Precision is not supported");
         }
     }
 
-    public void Write(BinaryWriter writer, ClickHouseDecimal value)
+    public int Write(Memory<byte> buffer, ClickHouseDecimal value)
     {
         try
         {
             var mantissa = ClickHouseDecimal.ScaleMantissa(value, _scale);
-            WriteBigInteger(writer, mantissa);
+            return WriteBigInteger(buffer.Span, mantissa);
         }
         catch (OverflowException)
         {
@@ -80,17 +75,17 @@ class DecimalType
         };
     }
 
-    private void WriteBigInteger(BinaryWriter writer, BigInteger value)
+    private int WriteBigInteger(Span<byte> buffer, BigInteger value)
     {
         var byteCount = value.GetByteCount();
-        Span<byte> buffer = stackalloc byte[byteCount];
-        value.TryWriteBytes(buffer, out _);
+        Span<byte> local = buffer[..byteCount];
+        value.TryWriteBytes(local, out _);
         Span<byte> decimalBytes = stackalloc byte[Size];
 
-        if (buffer.Length > Size)
-            throw new OverflowException($"Trying to write {buffer.Length} bytes, at most {Size} expected");
+        if (local.Length > Size)
+            throw new OverflowException($"Trying to write {local.Length} bytes, at most {Size} expected");
 
-        buffer.CopyTo(decimalBytes);
+        local.CopyTo(decimalBytes);
 
         // If a negative BigInteger is not long enough to fill the whole buffer,
         // the remainder needs to be filled with 0xFF
@@ -98,7 +93,8 @@ class DecimalType
         {
             decimalBytes.Fill(0xFF);
         }
-        writer.Write(decimalBytes);
+
+        return byteCount;
     }
 
     private decimal ScaleDecimal(decimal value, int scale)

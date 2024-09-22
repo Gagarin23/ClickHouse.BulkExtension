@@ -25,9 +25,11 @@ public class ComplexTableType
 
     [ClickHouseColumn(BigIntegerBits = BigIntegerBits.Bits256)]
     public BigInteger BigIntegerU256Column { get; set; }
+
+    [ClickHouseColumn(DateTimePrecision = DateTimePrecision.Microsecond)]
     public DateTime DateTimeColumn { get; set; }
     public IEnumerable<int> ArrayColumn { get; set; }
-    public Dictionary<string, long> MapColumn { get; set; }
+    public Dictionary<int, string> MapColumn { get; set; }
     public Tuple<string, int, long> TupleColumn { get; set; }
     public (string S, int X, long Y) ValueTupleColumn { get; set; }
 }

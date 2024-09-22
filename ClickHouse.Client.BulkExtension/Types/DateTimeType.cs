@@ -1,12 +1,10 @@
-﻿using System.Reflection;
-using ClickHouse.Client.BulkExtension.Annotation;
+﻿using ClickHouse.Client.BulkExtension.Annotation;
 
 namespace ClickHouse.Client.BulkExtension.Types;
 
 class DateTimeType<T>
     where T : struct
 {
-    public static readonly MethodInfo WriteMethod = typeof(DateTimeType<T>).GetMethod(nameof(Write), BindingFlags.Public | BindingFlags.Instance)!;
     public static readonly DateTimeType<T> DateTime64Second = new(DateTimePrecision.Second);
     public static readonly DateTimeType<T> DateTime64Millisecond = new(DateTimePrecision.Millisecond);
     public static readonly DateTimeType<T> DateTime64Microsecond = new(DateTimePrecision.Microsecond);
@@ -14,12 +12,12 @@ class DateTimeType<T>
 
     private readonly byte _precision;
 
-    public DateTimeType(DateTimePrecision precision)
+    private DateTimeType(DateTimePrecision precision)
     {
         _precision = (byte)precision;
     }
 
-    public void Write(BinaryWriter writer, T value)
+    public int Write(Memory<byte> buffer, T value)
     {
         var dateTimeOffset = ToDateTimeOffset(value);
 
@@ -38,17 +36,7 @@ class DateTimeType<T>
         var unixTime = unixTimeScaled + fractional;
 
         // Записываем значение как Int64 в порядке Little-Endian
-        writer.Write(unixTime);
-    }
-
-    private long GetDateTime64Multiplier()
-    {
-        long multiplier = 1;
-        for (int i = 0; i < _precision; i++)
-        {
-            multiplier *= 10;
-        }
-        return multiplier;
+        return Int64Type.Instance.Write(buffer, unixTime);
     }
 
     private DateTimeOffset ToDateTimeOffset(T value)
@@ -61,4 +49,23 @@ class DateTimeType<T>
             _                => throw new NotSupportedException()
         };
     }
+
+    private long GetDateTime64Multiplier()
+    {
+        return ScaleFactors[_precision];
+    }
+    
+    private static readonly long[] ScaleFactors = new long[]
+    {
+        1L,                      // 10^0
+        10L,                     // 10^1
+        100L,                    // 10^2
+        1000L,                   // 10^3
+        10000L,                  // 10^4
+        100000L,                 // 10^5
+        1000000L,                // 10^6
+        10000000L,               // 10^7
+        100000000L,              // 10^8
+        1000000000L,             // 10^9
+    };
 }

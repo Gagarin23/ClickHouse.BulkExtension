@@ -1,26 +1,23 @@
-﻿using System.Reflection;
-
-namespace ClickHouse.Client.BulkExtension.Types;
+﻿namespace ClickHouse.Client.BulkExtension.Types;
 
 public class UuidType
 {
-    public static readonly MethodInfo WriteMethod = typeof(UuidType).GetMethod(nameof(Write), BindingFlags.Public | BindingFlags.Instance)!;
     public static readonly UuidType Instance = new UuidType();
 
     private UuidType() { }
 
-    public void Write(BinaryWriter writer, Guid value)
+    public int Write(Memory<byte> buffer, Guid value)
     {
         Span<byte> guid = stackalloc byte[16];
-        Span<byte> destination = stackalloc byte[16];
+        var local = buffer.Span[..16];
         value.TryWriteBytes(guid);
 
         guid[8..].Reverse();
-        guid[6..8].CopyTo(destination[..2]);
-        guid[4..6].CopyTo(destination[2..4]);
-        guid[..4].CopyTo(destination[4..8]);
-        guid[8..].CopyTo(destination[8..]);
+        guid[6..8].CopyTo(local[..2]);
+        guid[4..6].CopyTo(local[2..4]);
+        guid[..4].CopyTo(local[4..8]);
+        guid[8..].CopyTo(local[8..]);
 
-        writer.Write(destination);
+        return 16;
     }
 }

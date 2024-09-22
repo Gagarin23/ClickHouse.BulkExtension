@@ -1,16 +1,15 @@
 ﻿namespace ClickHouse.Client.BulkExtension.Types;
 
-static class EnumerableType
+static class EnumerableType<T>
 {
-    public static void WriteCount<T>(BinaryWriter writer, IEnumerable<T>? enumerable)
+    public static int WriteCount(Memory<byte> buffer, IEnumerable<T>? enumerable)
     {
         if (enumerable is null)
         {
-            writer.Write7BitEncodedInt(0);
-            return;
+            return buffer.Write7BitEncodedInt(0);
         }
 
         var collection = enumerable as ICollection<T> ?? enumerable.ToList();
-        writer.Write7BitEncodedInt(collection.Count);
+        return buffer.Write7BitEncodedInt(collection.Count);
     }
 }

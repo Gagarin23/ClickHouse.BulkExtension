@@ -10,23 +10,23 @@ namespace ClickHouse.Client.BulkExtension.Benchmarks;
 
 /*
 
-| Method                   | Count  | Mean      | Error     | StdDev    | Allocated   |
-|------------------------- |------- |----------:|----------:|----------:|------------:|
-| BulkInsertInt32          | 10000  |  51.01 ms |  0.968 ms |  1.115 ms |   950.92 KB |
-| NewBulkInsertInt32       | 10000  |  51.08 ms |  1.018 ms |  1.251 ms |    28.05 KB |
-| BulkInsertEntity         | 10000  |  34.24 ms |  2.021 ms |  5.928 ms |  8541.46 KB |
-| NewBulkInsertEntity      | 10000  |  70.46 ms |  0.921 ms |  0.861 ms |    15.21 KB |
-| NewAsyncBulkInsertEntity | 10000  |  71.46 ms |  1.381 ms |  1.356 ms |    15.13 KB |
-| BulkInsertInt32          | 100000 |  45.67 ms |  1.247 ms |  3.678 ms |  6768.71 KB |
-| NewBulkInsertInt32       | 100000 |  60.68 ms |  0.753 ms |  0.668 ms |    32.82 KB |
-| BulkInsertEntity         | 100000 | 210.84 ms |  3.448 ms |  3.225 ms | 83271.48 KB |
-| NewBulkInsertEntity      | 100000 | 297.34 ms |  5.852 ms | 10.700 ms |     16.3 KB |
-| NewAsyncBulkInsertEntity | 100000 | 289.52 ms |  3.937 ms |  3.683 ms |    19.11 KB |
-| BulkInsertInt32          | 300000 |  38.46 ms |  1.061 ms |  3.044 ms | 20778.44 KB |
-| NewBulkInsertInt32       | 300000 |  80.68 ms |  0.825 ms |  0.689 ms |    28.69 KB |
-| BulkInsertEntity         | 300000 | 613.42 ms |  4.486 ms |  4.196 ms | 250446.5 KB |
-| NewBulkInsertEntity      | 300000 | 769.97 ms |  8.355 ms |  7.815 ms |    19.09 KB |
-| NewAsyncBulkInsertEntity | 300000 | 791.62 ms | 10.304 ms |  9.638 ms |    20.46 KB |
+| Method                   | Count  | Mean      | Error    | StdDev   | Allocated    |
+|------------------------- |------- |----------:|---------:|---------:|-------------:|
+| BulkInsertInt32          | 10000  |  50.44 ms | 0.874 ms | 0.775 ms |    949.64 KB |
+| NewBulkInsertInt32       | 10000  |  50.01 ms | 0.545 ms | 0.483 ms |     80.43 KB |
+| BulkInsertEntity         | 10000  |  36.07 ms | 2.005 ms | 5.913 ms |   7133.22 KB |
+| NewBulkInsertEntity      | 10000  |  60.43 ms | 0.729 ms | 0.682 ms |     11.23 KB |
+| NewAsyncBulkInsertEntity | 10000  |  60.40 ms | 0.985 ms | 0.921 ms |     10.95 KB |
+| BulkInsertInt32          | 100000 |  44.22 ms | 1.008 ms | 2.971 ms |   6767.41 KB |
+| NewBulkInsertInt32       | 100000 |  51.79 ms | 1.008 ms | 1.079 ms |     79.36 KB |
+| BulkInsertEntity         | 100000 | 193.74 ms | 1.860 ms | 1.452 ms |  69207.14 KB |
+| NewBulkInsertEntity      | 100000 | 192.16 ms | 2.948 ms | 2.758 ms |     11.91 KB |
+| NewAsyncBulkInsertEntity | 100000 | 199.41 ms | 0.433 ms | 0.361 ms |     11.27 KB |
+| BulkInsertInt32          | 300000 |  36.90 ms | 1.145 ms | 3.323 ms |  20777.09 KB |
+| NewBulkInsertInt32       | 300000 |  61.88 ms | 1.203 ms | 1.181 ms |     79.92 KB |
+| BulkInsertEntity         | 300000 | 572.20 ms | 7.518 ms | 7.032 ms | 208255.15 KB |
+| NewBulkInsertEntity      | 300000 | 492.94 ms | 5.700 ms | 5.331 ms |     12.46 KB |
+| NewAsyncBulkInsertEntity | 300000 | 502.44 ms | 6.539 ms | 6.117 ms |     10.87 KB |
 
  */
 
@@ -44,7 +44,7 @@ public class BulkInsertBench
         .ToArray();
 
 
-    [Params(10_000, 100_000, 300_000 /*, 1_000_000*/)]
+    [Params(10_000, 100_000, 300_000, 1_000_000)]
     public int Count { get; set; } = 100_000;
 
     private IEnumerable<object[]> ObjectIntRows
@@ -135,7 +135,7 @@ public class BulkInsertBench
         var connectionString = Environment.GetEnvironmentVariable("CLICKHOUSE_CONNECTION");
         _connection = new ClickHouseConnection(connectionString);
 
-        /*await _connection.ExecuteStatementAsync("DROP TABLE IF EXISTS benchmark_bulk_insert_int64");
+        await _connection.ExecuteStatementAsync("DROP TABLE IF EXISTS benchmark_bulk_insert_int64");
         await _connection.ExecuteStatementAsync("CREATE TABLE benchmark_bulk_insert_int64 (Value Int64) ENGINE Null");
 
         _bulkCopyInt = new ClickHouseBulkCopy(_connection)
@@ -145,9 +145,9 @@ public class BulkInsertBench
             MaxDegreeOfParallelism = 1,
             ColumnNames = new[] { "Value" }
         };
-        await _bulkCopyInt.InitAsync();*/
+        await _bulkCopyInt.InitAsync();
 
-        /*await _connection.ExecuteStatementAsync("DROP TABLE IF EXISTS benchmark_bulk_insert_entity");
+        await _connection.ExecuteStatementAsync("DROP TABLE IF EXISTS benchmark_bulk_insert_entity");
         await _connection.ExecuteStatementAsync(@"
 CREATE TABLE benchmark_bulk_insert_entity 
 (
@@ -170,7 +170,7 @@ CREATE TABLE benchmark_bulk_insert_entity
     TupleColumn Tuple(s String, i32 Int32, i64 Int64),
     ValueTupleColumn Tuple(s String, i32 Int32, i64 Int64)
 ) 
-    ENGINE Null");*/
+    ENGINE Null");
 
         _bulkCopyEntity = new ClickHouseBulkCopy(_connection)
         {
@@ -191,8 +191,8 @@ CREATE TABLE benchmark_bulk_insert_entity
     [Benchmark]
     public async Task NewBulkInsertInt32()
     {
-        await using var reader = new ClickHouseBulkReader(IntRows, new[] {"Value"}, "benchmark_bulk_insert_int64");
-        await _connection.PostStreamAsync(null, reader.GetStream(true), true, CancellationToken.None);
+        var reader = new ClickHouseBulkReader(IntRows, new[] {"Value"}, "benchmark_bulk_insert_int64", true);
+        await _connection.PostStreamAsync(null, reader.GetStreamWriteCallBack(), true, CancellationToken.None);
     }
 
     [Benchmark]
@@ -204,14 +204,14 @@ CREATE TABLE benchmark_bulk_insert_entity
     [Benchmark]
     public async Task NewBulkInsertEntity()
     {
-        await using var reader = new ClickHouseBulkReader(PrimitiveTableTypeRows, _sortedColumns, "benchmark_bulk_insert_entity");
-        await _connection.PostStreamAsync(null, reader.GetStream(true), true, CancellationToken.None);
+        var reader = new ClickHouseBulkReader(PrimitiveTableTypeRows, _sortedColumns, "benchmark_bulk_insert_entity", true);
+        await _connection.PostStreamAsync(null, reader.GetStreamWriteCallBack(), true, CancellationToken.None);
     }
 
     [Benchmark]
     public async Task NewAsyncBulkInsertEntity()
     {
-        await using var reader = new ClickHouseBulkAsyncReader<PrimitiveTableType>(GetAsyncPrimitiveTableTypeRows(), _sortedColumns, "benchmark_bulk_insert_entity");
-        await _connection.PostStreamAsync(null, reader.GetStream(true), true, CancellationToken.None);
+        var reader = new ClickHouseBulkAsyncReader<PrimitiveTableType>(GetAsyncPrimitiveTableTypeRows(), _sortedColumns, "benchmark_bulk_insert_entity", true);
+        await _connection.PostStreamAsync(null, reader.GetStreamWriteCallBack(), true, CancellationToken.None);
     }
 }

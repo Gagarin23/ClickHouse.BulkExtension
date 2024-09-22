@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using ClickHouse.Client.BulkExtension.Annotation;
 using ClickHouse.Client.BulkExtension.Numerics;
 using ClickHouse.Client.BulkExtension.Types;
+using DotNext.Linq.Expressions;
 using static DotNext.Metaprogramming.CodeGenerator;
 
 namespace ClickHouse.Client.BulkExtension;
@@ -40,63 +41,159 @@ static class StaticFunctions
         return sortedProperties;
     }
 
-    public static void SetWriteExpression(Type elementType, ParameterExpression binaryWriterParameter, MemberExpression getExpression)
+    public static void SetWriteExpression(Type elementType, Expression writerParameter, MemberExpression getExpression)
     {
         Expression writeExpression;
 
         if (elementType.IsValueType && elementType == typeof(Nullable<>).MakeGenericType(elementType))
         {
-            var writeMethod = typeof(NullableType).GetMethod(nameof(NullableType.WriteFlag), BindingFlags.Public | BindingFlags.Static)!.MakeGenericMethod(elementType);
-            Statement(Expression.Call(writeMethod, binaryWriterParameter, getExpression));
+            var writeMethod = typeof(NullableType)
+                .GetMethod(nameof(NullableType.WriteFlag), BindingFlags.Public | BindingFlags.Static)!.MakeGenericMethod(elementType)
+                .CreateDelegate(typeof(Func<,,>).MakeGenericType(typeof(Memory<byte>), typeof(Nullable<>).MakeGenericType(elementType), typeof(int)));
+
+            writeExpression = Expression.Call
+                (
+                    writerParameter,
+                    ClickHouseWriter.WriteMethod.MakeGenericMethod(typeof(Nullable<>).MakeGenericType(elementType)),
+                    Expression.Constant(writeMethod),
+                    getExpression
+                )
+                .Await();
+
+            Statement(writeExpression);
         }
 
         if (elementType == typeof(Guid))
         {
-            writeExpression = Expression.Call(Expression.Constant(UuidType.Instance), UuidType.WriteMethod, binaryWriterParameter, getExpression);
+            writeExpression = Expression.Call
+                (
+                    writerParameter,
+                    ClickHouseWriter.WriteMethod.MakeGenericMethod(typeof(Guid)),
+                    Expression.Constant(UuidType.Instance.Write),
+                    getExpression
+                )
+                .Await();
         }
         else if (elementType == typeof(bool))
         {
-            writeExpression = Expression.Call(Expression.Constant(BooleanType.Instance), BooleanType.WriteMethod, binaryWriterParameter, getExpression);
+            writeExpression = Expression.Call
+                (
+                    writerParameter,
+                    ClickHouseWriter.WriteMethod.MakeGenericMethod(typeof(bool)),
+                    Expression.Constant(BooleanType.Instance.Write),
+                    getExpression
+                )
+                .Await();
         }
         else if (elementType == typeof(byte))
         {
-            writeExpression = Expression.Call(Expression.Constant(UInt8Type.Instance), UInt8Type.WriteMethod, binaryWriterParameter, getExpression);
+            writeExpression = Expression.Call
+                (
+                    writerParameter,
+                    ClickHouseWriter.WriteMethod.MakeGenericMethod(typeof(byte)),
+                    Expression.Constant(UInt8Type.Instance.Write),
+                    getExpression
+                )
+                .Await();
         }
         else if (elementType == typeof(short))
         {
-            writeExpression = Expression.Call(Expression.Constant(Int16Type.Instance), Int16Type.WriteMethod, binaryWriterParameter, getExpression);
+            writeExpression = Expression.Call
+                (
+                    writerParameter,
+                    ClickHouseWriter.WriteMethod.MakeGenericMethod(typeof(short)),
+                    Expression.Constant(Int16Type.Instance.Write),
+                    getExpression
+                )
+                .Await();
         }
         else if (elementType == typeof(int))
         {
-            writeExpression = Expression.Call(Expression.Constant(Int32Type.Instance), Int32Type.WriteMethod, binaryWriterParameter, getExpression);
+            writeExpression = Expression.Call
+                (
+                    writerParameter,
+                    ClickHouseWriter.WriteMethod.MakeGenericMethod(typeof(int)),
+                    Expression.Constant(Int32Type.Instance.Write),
+                    getExpression
+                )
+                .Await();
         }
         else if (elementType == typeof(long))
         {
-            writeExpression = Expression.Call(Expression.Constant(Int64Type.Instance), Int64Type.WriteMethod, binaryWriterParameter, getExpression);
+            writeExpression = Expression.Call
+                (
+                    writerParameter,
+                    ClickHouseWriter.WriteMethod.MakeGenericMethod(typeof(long)),
+                    Expression.Constant(Int64Type.Instance.Write),
+                    getExpression
+                )
+                .Await();
         }
         else if (elementType == typeof(sbyte))
         {
-            writeExpression = Expression.Call(Expression.Constant(Int8Type.Instance), Int8Type.WriteMethod, binaryWriterParameter, getExpression);
+            writeExpression = Expression.Call
+                (
+                    writerParameter,
+                    ClickHouseWriter.WriteMethod.MakeGenericMethod(typeof(sbyte)),
+                    Expression.Constant(Int8Type.Instance.Write),
+                    getExpression
+                )
+                .Await();
         }
         else if (elementType == typeof(ushort))
         {
-            writeExpression = Expression.Call(Expression.Constant(UInt16Type.Instance), UInt16Type.WriteMethod, binaryWriterParameter, getExpression);
+            writeExpression = Expression.Call
+                (
+                    writerParameter,
+                    ClickHouseWriter.WriteMethod.MakeGenericMethod(typeof(ushort)),
+                    Expression.Constant(UInt16Type.Instance.Write),
+                    getExpression
+                )
+                .Await();
         }
         else if (elementType == typeof(uint))
         {
-            writeExpression = Expression.Call(Expression.Constant(UInt32Type.Instance), UInt32Type.WriteMethod, binaryWriterParameter, getExpression);
+            writeExpression = Expression.Call
+                (
+                    writerParameter,
+                    ClickHouseWriter.WriteMethod.MakeGenericMethod(typeof(uint)),
+                    Expression.Constant(UInt32Type.Instance.Write),
+                    getExpression
+                )
+                .Await();
         }
         else if (elementType == typeof(ulong))
         {
-            writeExpression = Expression.Call(Expression.Constant(UInt64Type.Instance), UInt64Type.WriteMethod, binaryWriterParameter, getExpression);
+            writeExpression = Expression.Call
+                (
+                    writerParameter,
+                    ClickHouseWriter.WriteMethod.MakeGenericMethod(typeof(ulong)),
+                    Expression.Constant(UInt64Type.Instance.Write),
+                    getExpression
+                )
+                .Await();
         }
         else if (elementType == typeof(float))
         {
-            writeExpression = Expression.Call(Expression.Constant(Float32Type.Instance), Float32Type.WriteMethod, binaryWriterParameter, getExpression);
+            writeExpression = Expression.Call
+                (
+                    writerParameter,
+                    ClickHouseWriter.WriteMethod.MakeGenericMethod(typeof(float)),
+                    Expression.Constant(Float32Type.Instance.Write),
+                    getExpression
+                )
+                .Await();
         }
         else if (elementType == typeof(double))
         {
-            writeExpression = Expression.Call(Expression.Constant(Float64Type.Instance), Float64Type.WriteMethod, binaryWriterParameter, getExpression);
+            writeExpression = Expression.Call
+                (
+                    writerParameter,
+                    ClickHouseWriter.WriteMethod.MakeGenericMethod(typeof(double)),
+                    Expression.Constant(Float64Type.Instance.Write),
+                    getExpression
+                )
+                .Await();
         }
         else if (elementType == typeof(BigInteger))
         {
@@ -107,27 +204,54 @@ static class StaticFunctions
                 BigIntegerBits.Bits256 => BigIntegerType.Instance256,
                 _ => throw new NotSupportedException($"BigIntegerBits {bitsQuantity} is not supported")
             };
-            writeExpression = Expression.Call(Expression.Constant(instance), BigIntegerType.WriteMethod, binaryWriterParameter, getExpression);
+            writeExpression = Expression.Call
+                (
+                    writerParameter,
+                    ClickHouseWriter.WriteMethod.MakeGenericMethod(typeof(BigInteger)),
+                    Expression.Constant(instance.Write),
+                    getExpression
+                )
+                .Await();
         }
         else if (elementType == typeof(decimal))
         {
             var columnAttribute = getExpression.Member.GetCustomAttribute<ClickHouseColumnAttribute>();
             var precision = columnAttribute?.Precision ?? 16;
             var scale = columnAttribute?.Scale ?? 4;
-            var decimalType = new DecimalType(precision, scale);
-            writeExpression = Expression.Call(Expression.Constant(decimalType), DecimalType.DecimalWriteMethod, binaryWriterParameter, getExpression);
+            var instance = new DecimalType(precision, scale);
+            writeExpression = Expression.Call
+                (
+                    writerParameter,
+                    ClickHouseWriter.WriteMethod.MakeGenericMethod(typeof(decimal)),
+                    Expression.Constant(new Func<Memory<byte>, decimal, int>(instance.Write)),
+                    getExpression
+                )
+                .Await();
         }
         else if (elementType == typeof(ClickHouseDecimal))
         {
             var columnAttribute = getExpression.Member.GetCustomAttribute<ClickHouseColumnAttribute>();
             var precision = columnAttribute?.Precision ?? 16;
             var scale = columnAttribute?.Scale ?? 4;
-            var decimalType = new DecimalType(precision, scale);
-            writeExpression = Expression.Call(Expression.Constant(decimalType), DecimalType.ClickHouseDecimalWriteMethod, binaryWriterParameter, getExpression);
+            var instance = new DecimalType(precision, scale);
+            writeExpression = Expression.Call
+                (
+                    writerParameter,
+                    ClickHouseWriter.WriteMethod.MakeGenericMethod(typeof(ClickHouseDecimal)),
+                    Expression.Constant(new Func<Memory<byte>, ClickHouseDecimal, int>(instance.Write)),
+                    getExpression
+                )
+                .Await();
         }
         else if (elementType == typeof(string))
         {
-            writeExpression = Expression.Call(Expression.Constant(StringType.Instance), StringType.WriteMethod, binaryWriterParameter, getExpression);
+            writeExpression = Expression.Call
+                (
+                    writerParameter,
+                    ClickHouseWriter.StringWriteMethod,
+                    getExpression
+                )
+                .Await();
         }
         else if (elementType.IsEnum)
         {
@@ -137,81 +261,155 @@ static class StaticFunctions
             {
                 case <= byte.MaxValue:
                     convertExpression = Expression.Convert(getExpression, typeof(byte));
-                    writeExpression = Expression.Call(Expression.Constant(UInt8Type.Instance), UInt8Type.WriteMethod, binaryWriterParameter, convertExpression);
+                    writeExpression = Expression.Call
+                        (
+                            writerParameter,
+                            ClickHouseWriter.WriteMethod.MakeGenericMethod(typeof(byte)),
+                            Expression.Constant(UInt8Type.Instance.Write),
+                            convertExpression
+                        )
+                        .Await();
                     break;
                 case <= short.MaxValue:
                     convertExpression = Expression.Convert(getExpression, typeof(short));
-                    writeExpression = Expression.Call(Expression.Constant(UInt16Type.Instance), UInt16Type.WriteMethod, binaryWriterParameter, convertExpression);
+                    writeExpression = Expression.Call
+                        (
+                            writerParameter,
+                            ClickHouseWriter.WriteMethod.MakeGenericMethod(typeof(short)),
+                            Expression.Constant(UInt16Type.Instance.Write),
+                            convertExpression
+                        )
+                        .Await();
                     break;
                 default:
                     convertExpression = Expression.Convert(getExpression, typeof(int));
-                    writeExpression = Expression.Call(Expression.Constant(UInt32Type.Instance), UInt32Type.WriteMethod, binaryWriterParameter, convertExpression);
+                    writeExpression = Expression.Call
+                        (
+                            writerParameter,
+                            ClickHouseWriter.WriteMethod.MakeGenericMethod(typeof(int)),
+                            Expression.Constant(UInt32Type.Instance.Write),
+                            convertExpression
+                        )
+                        .Await();
                     break;
             }
         }
         else if (elementType == typeof(DateTime))
         {
             var precision = getExpression.Member.GetCustomAttribute<ClickHouseColumnAttribute>()?.DateTimePrecision ?? DateTimePrecision.Second;
-            var dateTimeType = precision switch
+            var instance = precision switch
             {
                 DateTimePrecision.Second => DateTimeType<DateTime>.DateTime64Second,
                 DateTimePrecision.Millisecond => DateTimeType<DateTime>.DateTime64Millisecond,
                 DateTimePrecision.Microsecond => DateTimeType<DateTime>.DateTime64Microsecond,
                 DateTimePrecision.Nanosecond => DateTimeType<DateTime>.DateTime64Nanosecond,
             };
-            writeExpression = Expression.Call(Expression.Constant(dateTimeType), DateTimeType<DateTime>.WriteMethod, binaryWriterParameter, getExpression);
+            writeExpression = Expression.Call
+                (
+                    writerParameter,
+                    ClickHouseWriter.WriteMethod.MakeGenericMethod(typeof(DateTime)),
+                    Expression.Constant(instance.Write),
+                    getExpression
+                )
+                .Await();
         }
         else if (elementType == typeof(DateTimeOffset))
         {
             var precision = getExpression.Member.GetCustomAttribute<ClickHouseColumnAttribute>()?.DateTimePrecision ?? DateTimePrecision.Second;
-            var dateTimeType = precision switch
+            var instance = precision switch
             {
                 DateTimePrecision.Second      => DateTimeType<DateTimeOffset>.DateTime64Second,
                 DateTimePrecision.Millisecond => DateTimeType<DateTimeOffset>.DateTime64Millisecond,
                 DateTimePrecision.Microsecond => DateTimeType<DateTimeOffset>.DateTime64Microsecond,
                 DateTimePrecision.Nanosecond  => DateTimeType<DateTimeOffset>.DateTime64Nanosecond,
             };
-            writeExpression = Expression.Call(Expression.Constant(dateTimeType), DateTimeType<DateTimeOffset>.WriteMethod, binaryWriterParameter, getExpression);
+            writeExpression = Expression.Call
+                (
+                    writerParameter,
+                    ClickHouseWriter.WriteMethod.MakeGenericMethod(typeof(DateTimeOffset)),
+                    Expression.Constant(instance.Write),
+                    getExpression
+                )
+                .Await();
         }
         else if (elementType == typeof(DateOnly))
         {
             var precision = getExpression.Member.GetCustomAttribute<ClickHouseColumnAttribute>()?.DateTimePrecision ?? DateTimePrecision.Second;
-            var dateTimeType = precision switch
+            var instance = precision switch
             {
                 DateTimePrecision.Second      => DateTimeType<DateOnly>.DateTime64Second,
                 DateTimePrecision.Millisecond => DateTimeType<DateOnly>.DateTime64Millisecond,
                 DateTimePrecision.Microsecond => DateTimeType<DateOnly>.DateTime64Microsecond,
                 DateTimePrecision.Nanosecond  => DateTimeType<DateOnly>.DateTime64Nanosecond,
             };
-            writeExpression = Expression.Call(Expression.Constant(dateTimeType), DateTimeType<DateOnly>.WriteMethod, binaryWriterParameter, getExpression);
+            writeExpression = Expression.Call
+                (
+                    writerParameter,
+                    ClickHouseWriter.WriteMethod.MakeGenericMethod(typeof(DateOnly)),
+                    Expression.Constant(instance.Write),
+                    getExpression
+                )
+                .Await();
         }
         else if (elementType == typeof(IPAddress))
         {
-            writeExpression = Expression.Call(Expression.Constant(IPType.Instance), IPType.WriteMethod, binaryWriterParameter, getExpression);
+            writeExpression = Expression.Call
+                (
+                    writerParameter,
+                    ClickHouseWriter.WriteMethod.MakeGenericMethod(typeof(IPAddress)),
+                    Expression.Constant(IPType.Instance.Write),
+                    getExpression
+                )
+                .Await();
         }
         else if (elementType.IsGenericType && elementType.GetInterfaces().Any(x => x == typeof(IDictionary)))
         {
             var keyType = elementType.GetGenericArguments()[0];
             var valueType = elementType.GetGenericArguments()[1];
-            var writeMethod = typeof(MapType).GetMethod(nameof(MapType.WriteCount), BindingFlags.Public | BindingFlags.Static)!.MakeGenericMethod(keyType, valueType);
-            writeExpression = Expression.Call(writeMethod, binaryWriterParameter, getExpression);
+            writeExpression = Expression.Call
+                (
+                    writerParameter,
+                    ClickHouseWriter.WriteMethod.MakeGenericMethod(typeof(IDictionary)),
+                    Expression.Constant(MapType.Instance.WriteCount),
+                    getExpression
+                )
+                .Await();
             Statement(writeExpression);
             ForEach(getExpression, row =>
             {
-                SetWriteExpression(keyType, binaryWriterParameter, Expression.Property(row, "Key"));
-                SetWriteExpression(valueType, binaryWriterParameter, Expression.Property(row, "Value"));
+                SetWriteExpression(keyType, writerParameter, Expression.Property(row, "Key"));
+                SetWriteExpression(valueType, writerParameter, Expression.Property(row, "Value"));
             });
             return;
         }
         else if (elementType.IsGenericType && elementType.GetInterfaces().Any(x => x == typeof(IEnumerable)))
         {
             var genericType = elementType.GetGenericArguments()[0];
-            var writeMethod = typeof(EnumerableType).GetMethod(nameof(EnumerableType.WriteCount), BindingFlags.Public | BindingFlags.Static)!.MakeGenericMethod(genericType);
-            writeExpression = Expression.Call(writeMethod, binaryWriterParameter, getExpression);
+            var writeMethod = typeof(EnumerableType<>)
+                .MakeGenericType(genericType)
+                .GetMethod(nameof(EnumerableType<object>.WriteCount), BindingFlags.Public | BindingFlags.Static)!
+                .CreateDelegate
+                (
+                    typeof(Func<,,>).MakeGenericType
+                    (
+                        typeof(Memory<byte>),
+                        typeof(IEnumerable<>).MakeGenericType(genericType),
+                        typeof(int)
+                    )
+                );
+
+            writeExpression = Expression.Call
+                (
+                    writerParameter,
+                    ClickHouseWriter.WriteMethod.MakeGenericMethod(typeof(IEnumerable<>).MakeGenericType(genericType)),
+                    Expression.Constant(writeMethod),
+                    getExpression
+                )
+                .Await();
             Statement(writeExpression);
             ForEach(getExpression, row =>
             {
-                SetWriteExpression(genericType, binaryWriterParameter, row);
+                SetWriteExpression(genericType, writerParameter, row);
             });
             return;
         }
@@ -232,7 +430,7 @@ static class StaticFunctions
                     var property = elementType.GetProperty($"Item{i + 1}")!;
                     memberExpression = Expression.Property(getExpression, property);
                 }
-                SetWriteExpression(genericTypes[i], binaryWriterParameter, memberExpression);
+                SetWriteExpression(genericTypes[i], writerParameter, memberExpression);
             }
             return;
         }
@@ -242,5 +440,26 @@ static class StaticFunctions
         }
 
         Statement(writeExpression);
+    }
+
+    public static int Write7BitEncodedInt(this Memory<byte> buffer, int value)
+    {
+        var uValue = (uint)value;
+
+        // Write out an int 7 bits at a time. The high bit of the byte,
+        // when on, tells reader to continue reading more bytes.
+        //
+        // Using the constants 0x7F and ~0x7F below offers smaller
+        // codegen than using the constant 0x80.
+
+        var written = 0;
+        while (uValue > 0x7Fu)
+        {
+            written += UInt8Type.Instance.Write(buffer[written..], (byte)(uValue | ~0x7Fu));
+            uValue >>= 7;
+        }
+
+        written += UInt8Type.Instance.Write(buffer[written..], (byte)uValue);
+        return written;
     }
 }

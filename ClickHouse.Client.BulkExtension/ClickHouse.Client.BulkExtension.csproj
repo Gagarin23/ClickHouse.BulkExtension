@@ -3,13 +3,11 @@
     <PropertyGroup>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
+        <TargetFrameworks>net8.0;net6.0;net7.0</TargetFrameworks>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="DotNext.Metaprogramming" Version="4.15.0" />
-        <PackageReference Include="Lib.Harmony" Version="2.3.3" />
-        <PackageReference Include="System.IO.Pipelines" Version="8.0.0"/>
     </ItemGroup>
 
 </Project>

@@ -1,16 +1,16 @@
-﻿using System.Reflection;
+﻿using System.Buffers.Binary;
 
 namespace ClickHouse.Client.BulkExtension.Types;
 
 class UInt64Type
 {
-    public static readonly MethodInfo WriteMethod = typeof(UInt64Type).GetMethod(nameof(Write), BindingFlags.Public | BindingFlags.Instance)!;
     public static readonly UInt64Type Instance = new UInt64Type();
 
     private UInt64Type() { }
 
-    public void Write(BinaryWriter writer, ulong value)
+    public int Write(Memory<byte> buffer, ulong value)
     {
-        writer.Write(value);
+        BinaryPrimitives.WriteUInt64LittleEndian(buffer.Span[..sizeof(ulong)], value);
+        return sizeof(ulong);
     }
 }

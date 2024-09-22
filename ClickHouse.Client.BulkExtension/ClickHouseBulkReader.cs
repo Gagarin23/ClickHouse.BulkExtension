@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Concurrent;
 using System.IO.Compression;
-using System.IO.Pipelines;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
@@ -10,22 +9,20 @@ using static DotNext.Metaprogramming.CodeGenerator;
 
 namespace ClickHouse.Client.BulkExtension;
 
-public class ClickHouseBulkReader : IAsyncDisposable
+public class ClickHouseBulkReader
 {
     private static readonly ConcurrentDictionary<Key, Entry> WriteDelegates = new ConcurrentDictionary<Key, Entry>(Key.Comparer);
 
     private readonly IEnumerable _source;
+    private readonly bool _useCompression;
+    private readonly int _bufferSize;
     private readonly Type _elementType;
-    private readonly TaskCompletionSource _tcs;
-    private readonly PipeReader _reader;
-    private readonly PipeWriter _writer;
-    private readonly Action<BinaryWriter, IEnumerable> _writeFunction;
+    private readonly Func<ClickHouseWriter, IEnumerable, Task> _writeFunction;
     private readonly string _query;
 
     private bool _isTypeDeclared;
-    private Stream? _readStream;
 
-    public ClickHouseBulkReader(IEnumerable source, IReadOnlyList<string> sortedColumnNames, string tableName)
+    public ClickHouseBulkReader(IEnumerable source, IReadOnlyList<string> sortedColumnNames, string tableName, bool useCompression, int bufferSize = 4096)
     {
         if (string.IsNullOrEmpty(tableName))
         {
@@ -36,25 +33,49 @@ public class ClickHouseBulkReader : IAsyncDisposable
             throw new ArgumentException(nameof(sortedColumnNames));
         }
         _source = source ?? throw new ArgumentNullException(nameof(source));
+        _useCompression = useCompression;
+        _bufferSize = bufferSize;
         _elementType = GetElementType(source) ?? throw new ArgumentException("Could not determine element type of source");
 
         var entry = WriteDelegates.GetOrAdd(new Key(tableName, sortedColumnNames), GetEntry);
         _writeFunction = entry.WriteFunction;
         _query = entry.Query;
-
-        var pipe = new Pipe();
-        _reader = pipe.Reader;
-        _writer = pipe.Writer;
-        _tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
     }
 
-    public Task CompleteAsync()
+    public ClickHouseStreamContent GetStreamContent()
     {
-        if (_readStream == null)
+        return new ClickHouseStreamContent(WriteAsync);
+    }
+
+    public Func<Stream, CancellationToken, Task> GetStreamWriteCallBack()
+    {
+        return WriteAsync;
+    }
+
+    private async Task WriteAsync(Stream stream, CancellationToken cancellationToken)
+    {
+        var targetStream = _useCompression
+            ? new GZipStream(stream, CompressionLevel.Fastest, true)
+            : stream;
+
+        try
         {
-            _tcs.SetResult();
+            cancellationToken.ThrowIfCancellationRequested();
+            await using (var sw = new StreamWriter(targetStream, Encoding.UTF8, _query.Length, true))
+            {
+                await sw.WriteLineAsync(_query);
+            }
+            await using var writer = new ClickHouseWriter(targetStream, _bufferSize);
+            await _writeFunction(writer, _source);
         }
-        return _tcs.Task;
+        catch (Exception e)
+        {
+            Events.Writer.Error($"{nameof(ClickHouseBulkReader)}<{_source.GetType().Name}>", e);
+        }
+        finally
+        {
+            await targetStream.DisposeAsync();
+        }
     }
 
     private Type? GetElementType(IEnumerable source)
@@ -91,60 +112,16 @@ public class ClickHouseBulkReader : IAsyncDisposable
         return new Entry(query, writeFunction);
     }
 
-    public Stream GetStream(bool useCompression)
-    {
-        if (!_isTypeDeclared)
-        {
-            _tcs.SetResult();
-            return Stream.Null;
-        }
-        if (_readStream != null)
-        {
-            return _readStream;
-        }
-        _readStream = _reader.AsStream();
-        _ = Task.Run(() => WriteAsync(useCompression));
-        return _readStream;
-    }
-
-    private async Task WriteAsync(bool useCompression)
-    {
-        var targetStream = useCompression
-            ? new GZipStream(_writer.AsStream(), CompressionLevel.Fastest, false)
-            : _writer.AsStream();
-
-        var binaryWriter = new BinaryWriter(targetStream, Encoding.UTF8, false);
-        try
-        {
-            await using (var sw = new StreamWriter(targetStream, Encoding.UTF8, _query.Length, true))
-            {
-                await sw.WriteLineAsync(_query);
-            }
-            _writeFunction(binaryWriter, _source);
-            _tcs.SetResult();
-        }
-        catch (Exception e)
-        {
-            Events.Writer.Error($"{nameof(ClickHouseBulkReader)}<{_source.GetType().Name}>", e);
-            _tcs.SetException(e);
-        }
-        finally
-        {
-            await binaryWriter.DisposeAsync();
-            await _writer.CompleteAsync();
-        }
-    }
-
-    private Action<BinaryWriter, IEnumerable> BuildWriteFunction(IReadOnlyList<string> sortedColumnNames)
+    private Func<ClickHouseWriter, IEnumerable, Task> BuildWriteFunction(IReadOnlyList<string> sortedColumnNames)
     {
         var sortedProperties = StaticFunctions.GetSortedProperties(_elementType, sortedColumnNames);
         var lambda = BuildLambda(sortedProperties);
         return lambda.Compile();
     }
 
-    private Expression<Action<BinaryWriter, IEnumerable>> BuildLambda(PropertyInfo[] sortedProperties)
+    private Expression<Func<ClickHouseWriter, IEnumerable, Task>> BuildLambda(PropertyInfo[] sortedProperties)
     {
-        var lambda = Lambda<Action<BinaryWriter, IEnumerable>>(fun =>
+        var lambda = AsyncLambda<Func<ClickHouseWriter, IEnumerable, Task>>(fun =>
         {
             var rowsParameter = fun[1];
             ParameterExpression rowsVar = rowsParameter;
@@ -159,7 +136,7 @@ public class ClickHouseBulkReader : IAsyncDisposable
 
             ForEach(rowsVar, row =>
             {
-                var binaryWriterParameter = fun[0];
+                var writerParameter = fun[0];
                 Expression localRow = row;
                 if (!isGenericEnumerable)
                 {
@@ -172,7 +149,7 @@ public class ClickHouseBulkReader : IAsyncDisposable
                 {
                     var getter = property.GetMethod!;
                     var getExpression = Expression.Property(localRow, getter);
-                    StaticFunctions.SetWriteExpression(property.PropertyType, binaryWriterParameter, getExpression);
+                    StaticFunctions.SetWriteExpression(property.PropertyType, writerParameter, getExpression);
                 }
             });
 
@@ -180,17 +157,12 @@ public class ClickHouseBulkReader : IAsyncDisposable
         return lambda;
     }
 
-    public async ValueTask DisposeAsync()
-    {
-        await CompleteAsync();
-    }
-
     private struct Entry
     {
         public string Query { get; }
-        public Action<BinaryWriter, IEnumerable> WriteFunction { get; }
+        public Func<ClickHouseWriter, IEnumerable, Task> WriteFunction { get; }
 
-        public Entry(string query, Action<BinaryWriter, IEnumerable> writeFunction)
+        public Entry(string query, Func<ClickHouseWriter, IEnumerable, Task> writeFunction)
         {
             Query = query;
             WriteFunction = writeFunction;

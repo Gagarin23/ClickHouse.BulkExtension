@@ -2,8 +2,8 @@ namespace ClickHouse.Client.BulkExtension.Types;
 
 static class NullableType
 {
-    public static void WriteFlag<T>(BinaryWriter writer, T? value) where T : struct
+    public static int WriteFlag<T>(Memory<byte> buffer, T? value) where T : struct
     {
-        writer.Write(value.HasValue);
+        return BooleanType.Instance.Write(buffer, value.HasValue);
     }
 }

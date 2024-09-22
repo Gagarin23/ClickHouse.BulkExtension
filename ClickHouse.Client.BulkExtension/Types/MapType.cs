@@ -1,15 +1,20 @@
-﻿namespace ClickHouse.Client.BulkExtension.Types;
+﻿using System.Collections;
 
-static class MapType
+namespace ClickHouse.Client.BulkExtension.Types;
+
+class MapType
 {
-    public static void WriteCount<TKey, TValue>(BinaryWriter writer, IDictionary<TKey, TValue>? dict)
+    public static readonly MapType Instance = new MapType();
+
+    private MapType() { }
+
+    public int WriteCount(Memory<byte> buffer, IDictionary? dict)
     {
         if (dict is null)
         {
-            writer.Write7BitEncodedInt(0);
-            return;
+            return buffer.Write7BitEncodedInt(0);
         }
 
-        writer.Write7BitEncodedInt(dict.Count);
+        return buffer.Write7BitEncodedInt(dict.Count);
     }
 }
