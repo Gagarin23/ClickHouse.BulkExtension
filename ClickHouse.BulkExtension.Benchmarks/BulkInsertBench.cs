@@ -227,7 +227,7 @@ CREATE TABLE benchmark_bulk_insert_entity
     [Benchmark]
     public async Task NewBulkInsertEntity()
     {
-        await _connection.PostStreamAsync(null, _newBulkCopyEntity.GetStreamWriteCallBack(true), true, CancellationToken.None);
+        await _connection.PostStreamAsync(null, _newBulkCopyEntity.GetStreamWriteCallBack(false), false, CancellationToken.None);
     }
 
     [Benchmark]

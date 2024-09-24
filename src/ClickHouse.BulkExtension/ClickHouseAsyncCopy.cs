@@ -96,7 +96,10 @@ public class ClickHouseAsyncCopy<T>
         }
         finally
         {
-            await targetStream.DisposeAsync();
+            if (targetStream is GZipStream gzipStream)
+            {
+                await gzipStream.DisposeAsync();
+            }
         }
     }
 

@@ -2,18 +2,17 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <RootNamespace>ClickHouse.BulkExtension.Benchmarks</RootNamespace>
+        <TargetFramework>net8.0</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\ClickHouse.BulkExtension\ClickHouse.BulkExtension.csproj" />
+      <PackageReference Include="BenchmarkDotNet" Version="0.14.0" />
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="BenchmarkDotNet" Version="0.14.0" />
-      <PackageReference Include="ClickHouse.Client" Version="7.7.3" />
+      <ProjectReference Include="..\src\ClickHouse.Client.BulkExtension\ClickHouse.Client.BulkExtension.csproj" />
     </ItemGroup>
 
 </Project>

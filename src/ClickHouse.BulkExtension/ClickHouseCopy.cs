@@ -16,8 +16,8 @@ public class ClickHouseCopy
     private readonly Func<ClickHouseWriter, IEnumerable, Task> _writeFunction;
     private readonly string _query;
     private readonly IEnumerable _source;
+    private readonly Type _elementType;
 
-    private Type _elementType;
     private bool _useCompression;
     private int _bufferSize;
 
@@ -32,6 +32,7 @@ public class ClickHouseCopy
             throw new ArgumentException(nameof(columnNames));
         }
         _source = source;
+        _elementType = GetElementType(_source) ?? throw new ArgumentException("Could not determine element type of source");
         var entry = WriteDelegates.GetOrAdd(new Key(tableName, columnNames), GetEntry);
         _writeFunction = entry.WriteFunction;
         _query = entry.Query;
@@ -73,7 +74,10 @@ public class ClickHouseCopy
         }
         finally
         {
-            await targetStream.DisposeAsync();
+            if (targetStream is GZipStream gzipStream)
+            {
+                await gzipStream.DisposeAsync();
+            }
         }
     }
 
@@ -112,7 +116,6 @@ public class ClickHouseCopy
 
     private Func<ClickHouseWriter, IEnumerable, Task> BuildWriteFunction(IReadOnlyList<string> sortedColumnNames)
     {
-        _elementType ??= GetElementType(_source) ?? throw new ArgumentException("Could not determine element type of source");
         var sortedProperties = StaticFunctions.GetSortedProperties(_elementType, sortedColumnNames);
         var lambda = BuildLambda(sortedProperties);
         return lambda.Compile();

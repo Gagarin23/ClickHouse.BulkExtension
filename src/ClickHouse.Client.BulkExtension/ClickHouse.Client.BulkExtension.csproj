@@ -7,11 +7,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\ClickHouse.BulkExtension\ClickHouse.BulkExtension.csproj" />
+      <PackageReference Include="ClickHouse.Client" Version="7.8.0" />
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="ClickHouse.Client" Version="7.8.0" />
+      <ProjectReference Include="..\ClickHouse.BulkExtension\ClickHouse.BulkExtension.csproj" />
     </ItemGroup>
 
 </Project>
