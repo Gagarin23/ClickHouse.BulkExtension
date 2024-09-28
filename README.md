@@ -41,11 +41,11 @@ Below are benchmark results comparing different methods of bulk insertion, highl
 The library is designed to minimize resource consumption. By efficiently streaming data to ClickHouse, it reduces the impact on system resources and improves overall performance.\
 Let's take a look at the resource consumption of the library in one-minute work with one million records batch and total insertion of about 100 million records:
 
-![](\examples\ClickHouse.BulkExtension.Profiling\memprof_1.png)
-![](\examples\ClickHouse.BulkExtension.Profiling\memprof_2.png)
+![memprof_1.png](https://github.com/Gagarin23/ClickHouse.Client.BulkExtension/blob/main/examples/ClickHouse.BulkExtension.Profiling/memprof_1.png)
+![memprof_2.png](https://github.com/Gagarin23/ClickHouse.Client.BulkExtension/blob/main/examples/ClickHouse.BulkExtension.Profiling/memprof_2.png)
 
 For profiling, a structure with three fields and a total size of 24 bytes was used. Given the total insertion of 100 million records, the payload traffic will be about 2.4 gigabytes. The screenshot shows the memory consumption of the library over the entire period of operation - 200.6 kilobytes, which is about 0.008% of the total payload traffic.\
-The test console utility and the profiling file are located in the [ClickHouse.BulkExtension.Profiling](https://github.com/Gagarin23/ClickHouse.Client.BulkExtension/tree/main/examples/ClickHouse.BulkExtension.Profiling) folder.
+The test console utility and the profiling file are located in the [ClickHouse.BulkExtension.Profiling](https://github.com/Gagarin23/ClickHouse.Client.BulkExtension/tree/main/examples/ClickHouse.BulkExtension.Profiling) folder (ClickHouse.BulkExtension.Profiling.dmw for dotMemory)
 
 ## Getting Started
 
