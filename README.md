@@ -1,6 +1,6 @@
 # ClickHouse.BulkExtension
 
-[![NuGet](https://img.shields.io/nuget/v/ClickHouse.Client.BulkExtension.svg)](https://www.nuget.org/packages/ClickHouse.Client.BulkExtension/)
+[![NuGet](https://img.shields.io/nuget/v/ClickHouse.BulkExtension.svg)](https://www.nuget.org/packages/ClickHouse.BulkExtension/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 - [Overview](#overview)
