@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using System.Threading.Channels;
 using ClickHouse.BulkExtension;
 using ClickHouse.BulkExtension.Annotation;
@@ -6,7 +7,7 @@ using ClickHouse.Client.ADO;
 using ClickHouse.Client.Utility;
 using Microsoft.Extensions.Options;
 
-namespace ClickHouse.Client.BulkExtension.MinimalWebApi;
+namespace ClickHouse.Client.BulkExtension.WebApiAggregator;
 
 // It is important to use a struct as a buffer for data units
 // because a struct does not incur additional memory allocation on the heap.
@@ -26,14 +27,15 @@ public class BackgroundCopy : BackgroundService
     private readonly ClickHouseConnection _connection;
     private readonly IOptionsMonitor<AppOptions> _monitor;
     private readonly ChannelReader<YourStructType> _reader;
-
-    private int _itemCounter = 0;
+    private readonly CountHolder _itemCounter;
 
     public BackgroundCopy(ChannelHolder channelHolder, ClickHouseConnection connection, IOptionsMonitor<AppOptions> monitor)
     {
         _reader = channelHolder.Reader;
         _connection = connection;
         _monitor = monitor;
+        _itemCounter = new CountHolder();
+        new Meter(nameof(BackgroundCopy)).CreateObservableCounter("bulk_copy_items", () => _itemCounter.Count);
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -61,8 +63,6 @@ CREATE TABLE IF NOT EXISTS test_table
                 var asyncIteratedBatch = GetBatchAsync(_reader, cancellationToken);
                 var streamWriteFunction = copy.GetStreamWriteCallBack(asyncIteratedBatch, useCompression: false);
                 await _connection.PostStreamAsync(null, streamWriteFunction, false, cancellationToken);
-                await Console.Out.WriteLineAsync($"Batch of {_itemCounter} items has been copied.");
-                _itemCounter = 0;
             }
         }
         catch (Exception ex)
@@ -79,16 +79,23 @@ CREATE TABLE IF NOT EXISTS test_table
         var current = _monitor.CurrentValue;
         var maxBatchSize = current.MaxBatchSize;
         var maxBatchDuration = TimeSpan.FromSeconds(current.MaxBatchDurationInSeconds);
+        var itemCounter = 0;
 
         await foreach(var item in reader.ReadAllAsync(cancellationToken))
         {
-            if ((_itemCounter == maxBatchSize || stopwatch.Elapsed >= maxBatchDuration) && _itemCounter > 0)
+            if ((itemCounter == maxBatchSize || stopwatch.Elapsed >= maxBatchDuration) && itemCounter > 0)
             {
+                _itemCounter.Count += itemCounter;
                 break;
             }
 
             yield return item;
-            _itemCounter++;
+            itemCounter++;
         }
+    }
+
+    private class CountHolder
+    {
+        public int Count = 0;
     }
 }

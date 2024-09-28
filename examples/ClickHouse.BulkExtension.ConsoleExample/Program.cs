@@ -2,6 +2,7 @@
 using System.Text.Json;
 using System.Threading.Channels;
 using ClickHouse.BulkExtension;
+using ClickHouse.BulkExtension.Examples;
 using ClickHouse.Client.ADO;
 using ClickHouse.Client.BulkExtension;
 
@@ -117,7 +118,10 @@ static async IAsyncEnumerable<YourStructType> GetBatchAsync(ChannelReader<YourSt
 // While large structs may increase CPU copy operations,
 // we avoid garbage collection and memory fragmentation.
 // Therefore, using structs in this way is more scalable.
-public struct YourStructType
+namespace ClickHouse.BulkExtension.Examples
 {
-    // Define your struct fields or properties here
+    public struct YourStructType
+    {
+        // Define your struct fields or properties here
+    }
 }

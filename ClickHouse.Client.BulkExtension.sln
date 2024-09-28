@@ -10,7 +10,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClickHouse.Client.BulkExten
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClickHouse.BulkExtension.ConsoleExample", "examples\ClickHouse.BulkExtension.ConsoleExample\ClickHouse.BulkExtension.ConsoleExample.csproj", "{3DA72F3E-88F7-4FB9-8C7E-7F8344789009}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClickHouse.BulkExtension.MinimalWebApi", "examples\ClickHouse.BulkExtension.MinimalWebApi\ClickHouse.BulkExtension.MinimalWebApi.csproj", "{AE0435C4-4256-45DD-AFF6-CA9E454FBE62}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClickHouse.BulkExtension.WebApiAggregator", "examples\ClickHouse.BulkExtension.WebApiAggregator\ClickHouse.BulkExtension.WebApiAggregator.csproj", "{AE0435C4-4256-45DD-AFF6-CA9E454FBE62}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{7965794E-056F-414E-A642-BAF8CECBBA6E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{CB94679C-3DC7-432C-841A-C7029540D2E8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClickHouse.BulkExtension.Profiling", "examples\ClickHouse.BulkExtension.Profiling\ClickHouse.BulkExtension.Profiling.csproj", "{C16B60BE-BC0C-4F55-8438-3E0B9AC548EB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -42,5 +48,16 @@ Global
 		{AE0435C4-4256-45DD-AFF6-CA9E454FBE62}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AE0435C4-4256-45DD-AFF6-CA9E454FBE62}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AE0435C4-4256-45DD-AFF6-CA9E454FBE62}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C16B60BE-BC0C-4F55-8438-3E0B9AC548EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C16B60BE-BC0C-4F55-8438-3E0B9AC548EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C16B60BE-BC0C-4F55-8438-3E0B9AC548EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C16B60BE-BC0C-4F55-8438-3E0B9AC548EB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{281B131F-98C2-487D-B0B1-92EBD707554B} = {7965794E-056F-414E-A642-BAF8CECBBA6E}
+		{3DA72F3E-88F7-4FB9-8C7E-7F8344789009} = {CB94679C-3DC7-432C-841A-C7029540D2E8}
+		{AE0435C4-4256-45DD-AFF6-CA9E454FBE62} = {CB94679C-3DC7-432C-841A-C7029540D2E8}
+		{9E7086EE-9C1B-4AC9-9C48-92263FE4AC60} = {7965794E-056F-414E-A642-BAF8CECBBA6E}
+		{C16B60BE-BC0C-4F55-8438-3E0B9AC548EB} = {CB94679C-3DC7-432C-841A-C7029540D2E8}
 	EndGlobalSection
 EndGlobal

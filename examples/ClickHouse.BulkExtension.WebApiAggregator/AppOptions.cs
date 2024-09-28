@@ -1,4 +1,4 @@
-namespace ClickHouse.Client.BulkExtension.MinimalWebApi;
+namespace ClickHouse.Client.BulkExtension.WebApiAggregator;
 
 public class AppOptions
 {

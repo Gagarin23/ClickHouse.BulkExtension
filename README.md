@@ -33,9 +33,19 @@ Below are benchmark results comparing different methods of bulk insertion, highl
 | ClickHouse.Client.BulkExtension_ComplexStruct  | 1,000,000 | 1,599.89 ms  | 12.23 KB      |
 
 ### Interpretation of Results:
-- Memory Allocations: The methods using ClickHouseBulkExtension (NewBulkInsertInt64, NewBulkInsertEntity, etc.) show significantly lower memory allocations compared to traditional bulk insert methods. This indicates efficient memory usage, especially important when handling large datasets.
+- Memory Allocations: The methods using ClickHouseBulkExtension (BulkExtension_ComplexStruct) show significantly lower memory allocations compared to traditional bulk insert methods. This indicates efficient memory usage, especially important when handling large datasets.
 - Performance: Execution times are competitive, and in some cases, the new methods outperform the traditional ones, demonstrating the high performance of the library.
 - Scalability: The library maintains consistent performance and low memory usage even as the data volume increases to 1,000,000 records.
+
+## Resource consumption
+The library is designed to minimize resource consumption. By efficiently streaming data to ClickHouse, it reduces the impact on system resources and improves overall performance.\
+Let's take a look at the resource consumption of the library in one-minute work with one million records batch and total insertion of about 100 million records:
+
+![](\examples\ClickHouse.BulkExtension.Profiling\memprof_1.png)
+![](\examples\ClickHouse.BulkExtension.Profiling\memprof_2.png)
+
+For profiling, a structure with three fields and a total size of 24 bytes was used. Given the total insertion of 100 million records, the payload traffic will be about 2.4 gigabytes. The screenshot shows the memory consumption of the library over the entire period of operation - 200.6 kilobytes, which is about 0.008% of the total payload traffic.\
+The test console utility and the profiling file are located in the [ClickHouse.BulkExtension.Profiling](https://github.com/Gagarin23/ClickHouse.Client.BulkExtension/tree/main/examples/ClickHouse.BulkExtension.Profiling) folder.
 
 ## Getting Started
 
@@ -47,32 +57,7 @@ dotnet add package ClickHouse.Client.BulkExtension
 ```
 
 ### Usage
-Below are examples of how to use ClickHouse.Client.BulkExtension for both synchronous and asynchronous data insertion.
-
-#### Synchronous Insertion with IEnumerable
-```csharp
-using ClickHouse.Client.ADO;
-using ClickHouse.BulkExtension;
-
-var connectionString = "Your ClickHouse connection string";
-using var connection = new ClickHouseConnection(connectionString);
-
-// Define the data to insert
-IEnumerable<YourDataType> data = Enumarable.Range(0, 1_000_000)
-    .Select(i => new YourDataType { Column1 = i, Column2 = i * 2, Column3 = i * 3 });
-
-// Perform the bulk copy
-await connection.BulkCopyAsync(
-    tableName: "your_table",
-    columns: new[] { "Column1", "Column2", "Column3" },
-    source: data,
-    useCompression: false,
-    cancellationToken: CancellationToken.None);
-```
-
-#### Asynchronous Insertion with IAsyncEnumerable
-```csharp
-```
+The [examples](https://github.com/Gagarin23/ClickHouse.Client.BulkExtension/tree/main/examples) folder contains examples of using ClickHouse.Client.BulkExtension for both synchronous and asynchronous data insertion.
 
 ### Dynamic Code Compilation
 ClickHouseBulkExtension uses dynamic code compilation to generate optimized serialization code at runtime. This avoids boxing of value types, reducing memory allocations and improving performance.

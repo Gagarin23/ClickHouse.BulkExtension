@@ -1,6 +1,6 @@
 using System.Text.Json;
 using ClickHouse.Client.ADO;
-using ClickHouse.Client.BulkExtension.MinimalWebApi;
+using ClickHouse.Client.BulkExtension.WebApiAggregator;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 
@@ -16,6 +16,7 @@ services.AddSingleton<ClickHouseConnection>(s =>
 });
 services.AddSingleton<ChannelHolder>();
 services.AddHostedService<BackgroundCopy>();
+services.AddHostedService<BackgroundConsoleWriter>();
 
 services.AddEndpointsApiExplorer();
 services.AddSwaggerGen();
