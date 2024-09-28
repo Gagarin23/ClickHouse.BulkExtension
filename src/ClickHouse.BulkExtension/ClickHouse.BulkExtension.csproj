@@ -4,10 +4,25 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <TargetFrameworks>net8.0;net6.0;net7.0</TargetFrameworks>
+        <Authors>Belov Ilya</Authors>
+        <Description>ClickHouseBulkExtension is a high-performance .NET library designed for efficient bulk insertion of data into ClickHouse databases via streaming. It supports both synchronous and asynchronous data sources, including non-materialized collections, and provides advanced features like dynamic code compilation and optional data compression.</Description>
+        <PackageProjectUrl>https://github.com/Gagarin23/ClickHouse.Client.BulkExtension</PackageProjectUrl>
+        <Title>High-performance .NET library designed for efficient bulk insertion of data into ClickHouse databases</Title>
+        <PackageIcon>favicon.png</PackageIcon>
+        <RepositoryUrl>https://github.com/Gagarin23/ClickHouse.Client.BulkExtension</RepositoryUrl>
+        <RepositoryType>github</RepositoryType>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="DotNext.Metaprogramming" Version="4.15.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Include="..\favicon.png">
+        <Pack>True</Pack>
+        <PackagePath></PackagePath>
+        <Link>favicon.png</Link>
+      </None>
     </ItemGroup>
 
 </Project>

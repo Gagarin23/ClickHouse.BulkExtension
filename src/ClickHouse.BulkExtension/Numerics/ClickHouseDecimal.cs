@@ -190,9 +190,9 @@ public readonly struct ClickHouseDecimal
         return ScaleMantissa(this, maxScale) == ScaleMantissa(other, maxScale);
     }
 
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
-        return CompareTo(obj) == 0;
+        return obj != null && CompareTo(obj) == 0;
     }
 
     public override int GetHashCode()

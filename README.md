@@ -1,15 +1,34 @@
-# ClickHouse.Client.BulkExtension
+# ClickHouse.BulkExtension
+
+[![NuGet](https://img.shields.io/nuget/v/ClickHouse.Client.BulkExtension.svg)](https://www.nuget.org/packages/ClickHouse.Client.BulkExtension/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+- [Overview](#overview)
+- [Features](#features)
+- [Benchmark Results](#benchmark-results)
+    - [Environment](#environment)
+    - [BenchmarkDotNet v0.14.0](#benchmarkdotnet-v0140)
+    - [Interpretation of Results](#interpretation-of-results)
+- [Resource Consumption](#resource-consumption)
+- [Getting Started](#getting-started)
+    - [Installation](#installation)
+    - [Usage](#usage)
+- [How It Works](#how-it-works)
+- [License](#license)
+- [Contributing](#contributing)
+- [Support](#support)
 
 ## Overview
-ClickHouseBulkExtension is a high-performance .NET library designed for efficient bulk insertion of data into ClickHouse databases via HTTP streaming. It supports both synchronous and asynchronous data sources, including non-materialized collections, and provides advanced features like dynamic code compilation and optional data compression.
+ClickHouse.BulkExtension is a high-performance .NET library designed for efficient bulk insertion of data into ClickHouse databases via streaming. It supports both synchronous and asynchronous data sources, including streaming from non-materialized collections, and provides advanced features like dynamic code compilation and optional data compression.
 
 ## Features
-- Support for IEnumerable and IAsyncEnumerable: Stream data directly from synchronous or asynchronous enumerables without materializing the entire collection in memory.
-- Dynamic Code Compilation: Utilizes dynamic code generation to avoid boxing of value types, improving performance and reducing memory allocations.
-- Optional Compression: Supports optional data compression (e.g., GZip) to reduce network bandwidth usage.
-- High Performance: Designed for high-throughput scenarios, optimized to minimize CPU usage and memory allocations.
-- Minimal Memory Allocations: Efficiently handles large datasets with minimal impact on memory consumption.
-- Easy Integration: Seamlessly integrates with existing projects using ClickHouse.
+
+- **Support for `IEnumerable` and `IAsyncEnumerable`**: Stream data directly from synchronous or asynchronous enumerables without materializing the entire collection in memory.
+- **Dynamic Code Compilation**: Uses dynamic code generation to avoid boxing of value types, improving performance and reducing memory allocations.
+- **Optional Compression**: Supports optional data compression (e.g., GZip) to reduce network bandwidth usage.
+- **High Performance**: Designed for high-throughput scenarios, optimized to minimize CPU usage and memory allocations.
+- **Minimal Memory Allocations**: Efficiently handles large datasets with minimal impact on memory consumption.
+- **Easy Integration**: Seamlessly integrates with existing projects using ClickHouse.
 
 ## Benchmark Results
 Below are benchmark results comparing different methods of bulk insertion, highlighting the performance benefits of ClickHouseBulkExtension.
@@ -21,40 +40,59 @@ Below are benchmark results comparing different methods of bulk insertion, highl
 
 ### BenchmarkDotNet v0.14.0
 
-| Method                                         | Count     | Mean         | Allocated     |
-|------------------------------------------------|-----------|--------------|---------------|
-| ClickHouse.Client.Copy_ComplexStruct           | 10,000    | 31.05 ms     | 7,211.42 KB   |
-| ClickHouse.Client.BulkExtension_ComplexStruct  | 10,000    | 60.53 ms     | 10.85 KB      |
-| ClickHouse.Client.Copy_ComplexStruct           | 100,000   | 195.88 ms    | 69,989.35 KB  |
-| ClickHouse.Client.BulkExtension_ComplexStruct  | 100,000   | 199.56 ms    | 11.25 KB      |
-| ClickHouse.Client.Copy_ComplexStruct           | 300,000   | 582.16 ms    | 210,602.02 KB |
-| ClickHouse.Client.BulkExtension_ComplexStruct  | 300,000   | 518.25 ms    | 12.77 KB      |
-| ClickHouse.Client.Copy_ComplexStruct           | 1,000,000 | 2,007.25 ms  | 696,371.72 KB |
-| ClickHouse.Client.BulkExtension_ComplexStruct  | 1,000,000 | 1,599.89 ms  | 12.23 KB      |
+**Disclaimer**: The benchmark results are based on specific hardware and software configurations. Your results may vary depending on your environment.
 
-### Interpretation of Results:
-- Memory Allocations: The methods using ClickHouseBulkExtension (BulkExtension_ComplexStruct) show significantly lower memory allocations compared to traditional bulk insert methods. This indicates efficient memory usage, especially important when handling large datasets.
-- Performance: Execution times are competitive, and in some cases, the new methods outperform the traditional ones, demonstrating the high performance of the library.
-- Scalability: The library maintains consistent performance and low memory usage even as the data volume increases to 1,000,000 records.
+| Method                                         | Count     | Mean (ms)    | Allocated (KB) |
+|------------------------------------------------|-----------|--------------|----------------|
+| **Traditional Bulk Insert**                    | 10,000    | 31.05        | 7,211.42       |
+| **BulkExtension (Complex Struct)**             | 10,000    | 60.53        | 10.85          |
+| **Traditional Bulk Insert**                    | 100,000   | 195.88       | 69,989.35      |
+| **BulkExtension (Complex Struct)**             | 100,000   | 199.56       | 11.25          |
+| **Traditional Bulk Insert**                    | 300,000   | 582.16       | 210,602.02     |
+| **BulkExtension (Complex Struct)**             | 300,000   | 518.25       | 12.77          |
+| **Traditional Bulk Insert**                    | 1,000,000 | 2,007.25     | 696,371.72     |
+| **BulkExtension (Complex Struct)**             | 1,000,000 | 1,599.89     | 12.23          |
 
-## Resource consumption
-The library is designed to minimize resource consumption. By efficiently streaming data to ClickHouse, it reduces the impact on system resources and improves overall performance.\
-Let's take a look at the resource consumption of the library in one-minute work with one million records batch and total insertion of about 100 million records:
+- Traditional Bulk Insert: Using ClickHouse.Client.Copy method for bulk insertion with complex structures.
+- BulkExtension (Complex Struct): Using ClickHouse.Client.BulkExtension with complex structures.
 
-![memprof_1.png](https://github.com/Gagarin23/ClickHouse.Client.BulkExtension/blob/main/examples/ClickHouse.BulkExtension.Profiling/memprof_1.png)
-![memprof_2.png](https://github.com/Gagarin23/ClickHouse.Client.BulkExtension/blob/main/examples/ClickHouse.BulkExtension.Profiling/memprof_2.png)
+#### Interpretation of Results
 
-For profiling, a structure with three fields and a total size of 24 bytes was used. Given the total insertion of 100 million records, the payload traffic will be about 2.4 gigabytes. The screenshot shows the memory consumption of the library over the entire period of operation - 200.6 kilobytes, which is about 0.008% of the total payload traffic.\
-The test console utility and the profiling file are located in the [ClickHouse.BulkExtension.Profiling](https://github.com/Gagarin23/ClickHouse.Client.BulkExtension/tree/main/examples/ClickHouse.BulkExtension.Profiling) folder (ClickHouse.BulkExtension.Profiling.dmw for dotMemory)
+- **Memory Allocations**: The methods using ClickHouse.Client.BulkExtension show **over 99% reduction** in memory allocations compared to traditional methods. This demonstrates efficient memory usage, crucial for large datasets.
+- **Performance**: Execution times are competitive. In cases with 1,000,000 records, `BulkExtension` performs faster than traditional methods, showcasing its high performance.
+- **Scalability**: The library maintains consistent performance and low memory usage even as data volume increases, proving its scalability.
+
+## Resource Consumption
+
+The library is designed to minimize resource consumption by efficiently streaming data to ClickHouse, reducing the impact on system resources, and improving overall performance.
+
+Let's examine the resource consumption during a one-minute operation with a batch of one million records, totaling approximately 100 million records inserted:
+
+![Memory Profile 1](https://github.com/Gagarin23/ClickHouse.Client.BulkExtension/blob/main/examples/ClickHouse.BulkExtension.Profiling/memprof_1.png)
+*Figure 1: Memory consumption over the operation period.*
+![Memory Profile 2](https://github.com/Gagarin23/ClickHouse.Client.BulkExtension/blob/main/examples/ClickHouse.BulkExtension.Profiling/memprof_2.png)
+*Figure 2: Detailed memory allocation analysis.*
+
+For profiling, a structure with three fields and a total size of 24 bytes was used. Given the total insertion of 100 million records, the payload traffic amounts to approximately 2.4 gigabytes. The screenshots show the library's memory consumption over the entire period of operation—200.6 kilobytes—which is about 0.008% of the total payload traffic.
+
+The test console utility and the profiling file are located in the [ClickHouse.BulkExtension.Profiling](https://github.com/Gagarin23/ClickHouse.Client.BulkExtension/tree/main/examples/ClickHouse.BulkExtension.Profiling) folder (`ClickHouse.BulkExtension.Profiling.dmw` for dotMemory).
 
 ## Getting Started
 
 ### Installation
-The library is available as a NuGet package. You can install it using the following command:
+
+You can install the library via NuGet:
+
+- To install the full package with the client:
 
 ```bash
 dotnet add package ClickHouse.Client.BulkExtension
 ```
+- If you only need the bulk copy functionality:
+```bash
+dotnet add package ClickHouse.BulkExtension
+```
+If you need just the bulk copy library.
 
 ### Usage
 The [examples](https://github.com/Gagarin23/ClickHouse.Client.BulkExtension/tree/main/examples) folder contains examples of using ClickHouse.Client.BulkExtension for both synchronous and asynchronous data insertion.
@@ -68,12 +106,18 @@ ClickHouseBulkExtension uses dynamic code compilation to generate optimized seri
 - Compression: Optional compression reduces the amount of data transmitted over the network, which can improve performance when network bandwidth is a limiting factor.
 
 ## License
-This project is licensed under the MIT License - see the LICENSE file for details.
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Contributing
+
+Contributions are welcome! If you find a bug or have a feature request, please open an issue on the [GitHub repository](https://github.com/Gagarin23/ClickHouse.Client.BulkExtension). Pull requests are also appreciated.
+
+## Support
+
+For questions or assistance, feel free to open an issue or contact us at [cuzitworks92@gmail.com](mailto:cuzitworks92@gmail.com).
 
 ---
 
- Disclaimer: The benchmark results are based on specific hardware and software configurations. Your results may vary depending on your environment.
+Feel free to explore the library and integrate it into your projects for efficient and high-performance data insertion into ClickHouse. We look forward to your feedback and contributions!
 
----
-
-Feel free to explore the library and integrate it into your projects for efficient and high-performance data insertion into ClickHouse!

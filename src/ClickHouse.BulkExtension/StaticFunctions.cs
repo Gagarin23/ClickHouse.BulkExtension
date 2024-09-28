@@ -9,6 +9,8 @@ using ClickHouse.BulkExtension.Numerics;
 using ClickHouse.BulkExtension.Types;
 using DotNext.Linq.Expressions;
 using static DotNext.Metaprogramming.CodeGenerator;
+// ReSharper disable All
+#pragma warning disable CS8974 // Converting method group to non-delegate type
 
 namespace ClickHouse.BulkExtension;
 
@@ -299,10 +301,11 @@ static class StaticFunctions
             var precision = getExpression.Member.GetCustomAttribute<ClickHouseColumnAttribute>()?.DateTimePrecision ?? DateTimePrecision.Second;
             var instance = precision switch
             {
-                DateTimePrecision.Second => DateTimeType<DateTime>.DateTime64Second,
+                DateTimePrecision.Second      => DateTimeType<DateTime>.DateTime64Second,
                 DateTimePrecision.Millisecond => DateTimeType<DateTime>.DateTime64Millisecond,
                 DateTimePrecision.Microsecond => DateTimeType<DateTime>.DateTime64Microsecond,
-                DateTimePrecision.Nanosecond => DateTimeType<DateTime>.DateTime64Nanosecond,
+                DateTimePrecision.Nanosecond  => DateTimeType<DateTime>.DateTime64Nanosecond,
+                _                             => throw new ArgumentOutOfRangeException(nameof(precision))
             };
             writeExpression = Expression.Call
                 (
@@ -322,6 +325,7 @@ static class StaticFunctions
                 DateTimePrecision.Millisecond => DateTimeType<DateTimeOffset>.DateTime64Millisecond,
                 DateTimePrecision.Microsecond => DateTimeType<DateTimeOffset>.DateTime64Microsecond,
                 DateTimePrecision.Nanosecond  => DateTimeType<DateTimeOffset>.DateTime64Nanosecond,
+                _                             => throw new ArgumentOutOfRangeException(nameof(precision))
             };
             writeExpression = Expression.Call
                 (
@@ -341,6 +345,7 @@ static class StaticFunctions
                 DateTimePrecision.Millisecond => DateTimeType<DateOnly>.DateTime64Millisecond,
                 DateTimePrecision.Microsecond => DateTimeType<DateOnly>.DateTime64Microsecond,
                 DateTimePrecision.Nanosecond  => DateTimeType<DateOnly>.DateTime64Nanosecond,
+                _                             => throw new ArgumentOutOfRangeException(nameof(precision))
             };
             writeExpression = Expression.Call
                 (

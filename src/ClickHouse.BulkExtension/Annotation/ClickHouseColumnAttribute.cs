@@ -3,7 +3,7 @@ namespace ClickHouse.BulkExtension.Annotation;
 [AttributeUsage(AttributeTargets.Property)]
 public class ClickHouseColumnAttribute : Attribute
 {
-    public string Name { get; set; }
+    public string? Name { get; set; }
     public byte Precision { get; set; }
     public byte Scale { get; set; }
     public DateTimePrecision DateTimePrecision { get; set; } = DateTimePrecision.Millisecond;
