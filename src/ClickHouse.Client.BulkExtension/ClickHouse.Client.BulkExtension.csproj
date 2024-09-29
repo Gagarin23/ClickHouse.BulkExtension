@@ -11,22 +11,25 @@
         <PackageIcon>favicon.png</PackageIcon>
         <RepositoryUrl>https://github.com/Gagarin23/ClickHouse.Client.BulkExtension</RepositoryUrl>
         <RepositoryType>github</RepositoryType>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <Version>1.0.1</Version>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="ClickHouse.Client" Version="7.8.0" />
+        <PackageReference Include="ClickHouse.Client" Version="7.8.0" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\ClickHouse.BulkExtension\ClickHouse.BulkExtension.csproj" />
+        <ProjectReference Include="..\ClickHouse.BulkExtension\ClickHouse.BulkExtension.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <None Include="..\favicon.png">
-        <Pack>True</Pack>
-        <PackagePath></PackagePath>
+        <None Include="..\favicon.png">
+            <Pack>True</Pack>
+            <PackagePath></PackagePath>
         <Link>favicon.png</Link>
-      </None>
+        </None>
+        <None Include="..\..\README.md" Pack="True" PackagePath="" Visible="false" Link="README.md" />
     </ItemGroup>
 
 </Project>
