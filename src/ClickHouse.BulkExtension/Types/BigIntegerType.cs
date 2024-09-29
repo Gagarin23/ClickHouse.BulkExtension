@@ -28,14 +28,13 @@ class BigIntegerType
             value -= bi + 1;
         }
 
-        var written = 0;
         if (!isNegative && (_size == 16 && bitsLength == 128 || _size == 32 && bitsLength == 256))
         {
-            value.TryWriteBytes(bigIntBytes, out written, isUnsigned: true);
+            value.TryWriteBytes(bigIntBytes, out _, isUnsigned: true);
         }
         else
         {
-            value.TryWriteBytes(bigIntBytes, out written);
+            value.TryWriteBytes(bigIntBytes, out _);
         }
 
         return _size;

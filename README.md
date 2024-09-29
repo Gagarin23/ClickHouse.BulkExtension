@@ -42,19 +42,25 @@ Below are benchmark results comparing different methods of bulk insertion, highl
 
 **Disclaimer**: The benchmark results are based on specific hardware and software configurations. Your results may vary depending on your environment.
 
-| Method                                         | Count     | Mean (ms)    | Allocated (KB) |
-|------------------------------------------------|-----------|--------------|----------------|
-| **Traditional Bulk Insert**                    | 10,000    | 31.05        | 7,211.42       |
-| **BulkExtension (Complex Struct)**             | 10,000    | 60.53        | 10.85          |
-| **Traditional Bulk Insert**                    | 100,000   | 195.88       | 69,989.35      |
-| **BulkExtension (Complex Struct)**             | 100,000   | 199.56       | 11.25          |
-| **Traditional Bulk Insert**                    | 300,000   | 582.16       | 210,602.02     |
-| **BulkExtension (Complex Struct)**             | 300,000   | 518.25       | 12.77          |
-| **Traditional Bulk Insert**                    | 1,000,000 | 2,007.25     | 696,371.72     |
-| **BulkExtension (Complex Struct)**             | 1,000,000 | 1,599.89     | 12.23          |
+| Method                                                  | Count     | Mean (ms)  | Allocated (KB) |
+|---------------------------------------------------------|-----------|------------|----------------|
+| **Traditional Bulk Insert**                             | 10,000    | 31.05      | 7,211.42       |
+| **BulkExtension (Complex Struct)**                      | 10,000    | 60.53      | 10.85          |
+| **BulkExtension (Complex Struct) without compression**  | 10,000    | 52.29      | 10.57          |
+| **Traditional Bulk Insert**                             | 100,000   | 195.88     | 69,989.35      |
+| **BulkExtension (Complex Struct)**                      | 100,000   | 199.56     | 11.25          |
+| **BulkExtension (Complex Struct) without compression**  | 100,000   | 123.70     | 10.63          |
+| **Traditional Bulk Insert**                             | 300,000   | 582.16     | 210,602.02     |
+| **BulkExtension (Complex Struct)**                      | 300,000   | 518.25     | 12.77          |
+| **BulkExtension (Complex Struct) without compression**  | 300,000   | 285.06     | 11.55          |
+| **Traditional Bulk Insert**                             | 1,000,000 | 2,007.25   | 696,371.72     |
+| **BulkExtension (Complex Struct)**                      | 1,000,000 | 1,599.89   | 12.23          |
+| **BulkExtension (Complex Struct) without compression**  | 1,000,000 | 838.29     | 12.86          |
 
 - Traditional Bulk Insert: Using ClickHouse.Client.Copy method for bulk insertion with complex structures.
+- Traditional Bulk Insert without compression: No results, because ClickHouse.Client.Copy does not support compression switch off. (why?!)
 - BulkExtension (Complex Struct): Using ClickHouse.Client.BulkExtension with complex structures.
+- BulkExtension (Complex Struct) without compression: Using ClickHouse.Client.BulkExtension with complex structures and no compression. 
 
 #### Interpretation of Results
 
