@@ -206,19 +206,19 @@ CREATE TABLE benchmark_bulk_insert_entity
         _newAsyncBulkCopyEntity = new ClickHouseAsyncCopy<PrimitiveTableType>("benchmark_bulk_insert_entity", _columns);
     }
 
-    //[Benchmark]
+    [Benchmark]
     public async Task BulkInsertInt64()
     {
         await _bulkCopyInt.WriteToServerAsync(ObjectIntRows);
     }
 
-    //[Benchmark]
+    [Benchmark]
     public async Task NewBulkInsertInt64()
     {
         await _connection.PostStreamAsync(null, _newBulkCopyInt.GetStreamWriteCallBack(true), true, CancellationToken.None);
     }
 
-    //[Benchmark]
+    [Benchmark]
     public async Task BulkInsertEntity()
     {
         await _bulkCopyEntity.WriteToServerAsync(ObjectPrimitiveTableTypeRows);
@@ -227,16 +227,16 @@ CREATE TABLE benchmark_bulk_insert_entity
     [Benchmark]
     public async Task NewBulkInsertEntity()
     {
-        await _connection.PostStreamAsync(null, _newBulkCopyEntity.GetStreamWriteCallBack(false), false, CancellationToken.None);
+        await _connection.PostStreamAsync(null, _newBulkCopyEntity.GetStreamWriteCallBack(true), true, CancellationToken.None);
     }
 
-    //[Benchmark]
+    [Benchmark]
     public async Task NewGenericBulkInsertEntity()
     {
         await _connection.PostStreamAsync(null, _newGenericBulkCopyEntity.GetStreamWriteCallBack(PrimitiveTableTypeRows, true), true, CancellationToken.None);
     }
 
-    //[Benchmark]
+    [Benchmark]
     public async Task NewAsyncBulkInsertEntity()
     {
         await _connection.PostStreamAsync(null, _newAsyncBulkCopyEntity.GetStreamWriteCallBack(GetAsyncPrimitiveTableTypeRows(), true), true, CancellationToken.None);
