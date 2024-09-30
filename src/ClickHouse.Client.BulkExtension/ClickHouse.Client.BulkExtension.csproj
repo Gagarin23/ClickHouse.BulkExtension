@@ -12,7 +12,7 @@
         <RepositoryUrl>https://github.com/Gagarin23/ClickHouse.Client.BulkExtension</RepositoryUrl>
         <RepositoryType>github</RepositoryType>
         <PackageReadmeFile>README.md</PackageReadmeFile>
-        <Version>1.0.1</Version>
+        <Version>1.0.2</Version>
     </PropertyGroup>
 
     <ItemGroup>
