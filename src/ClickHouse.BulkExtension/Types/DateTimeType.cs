@@ -1,4 +1,5 @@
-﻿using ClickHouse.BulkExtension.Annotation;
+﻿using System.Runtime.CompilerServices;
+using ClickHouse.BulkExtension.Annotation;
 
 namespace ClickHouse.BulkExtension.Types;
 
@@ -17,28 +18,27 @@ class DateTimeType<T>
         _precision = (byte)precision;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int Write(Memory<byte> buffer, T value)
     {
         var dateTimeOffset = ToDateTimeOffset(value);
 
-        // Вычисляем множитель для precision
-        var multiplier = GetDateTime64Multiplier();
+        var multiplier = ScaleFactors[_precision];
 
-        // Получаем Unix-время в секундах и умножаем на множитель
+        // Get Unix-time in seconds and multiply it
         var unixTimeSeconds = dateTimeOffset.ToUnixTimeSeconds();
         var unixTimeScaled = unixTimeSeconds * multiplier;
 
-        // Вычисляем дробную часть секунд и масштабируем ее
+        // Calculate the fractional part of seconds and scale it
         var fractionalTicks = dateTimeOffset.Ticks % TimeSpan.TicksPerSecond;
         var fractional = fractionalTicks * multiplier / TimeSpan.TicksPerSecond;
 
-        // Итоговое значение времени
         var unixTime = unixTimeScaled + fractional;
 
-        // Записываем значение как Int64 в порядке Little-Endian
         return Int64Type.Instance.Write(buffer, unixTime);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private DateTimeOffset ToDateTimeOffset(T value)
     {
         return value switch
@@ -48,11 +48,6 @@ class DateTimeType<T>
             DateOnly date    => new DateTimeOffset(date.Year, date.Month, date.Day, 0, 0, 0, TimeSpan.Zero),
             _                => throw new NotSupportedException()
         };
-    }
-
-    private long GetDateTime64Multiplier()
-    {
-        return ScaleFactors[_precision];
     }
     
     private static readonly long[] ScaleFactors = new long[]

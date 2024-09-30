@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 
 namespace ClickHouse.BulkExtension.Types;
 
@@ -9,6 +10,7 @@ class IPType
 
     private IPType() { }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int Write(Memory<byte> buffer, IPAddress value)
     {
         if (value.AddressFamily == AddressFamily.InterNetwork)

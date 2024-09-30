@@ -23,7 +23,7 @@ public class ClickHouseStreamContent : HttpContent
 
     protected override bool TryComputeLength(out long length)
     {
-        length = -1; // Длина неизвестна
+        length = -1;
         return false;
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Runtime.CompilerServices;
 
 namespace ClickHouse.BulkExtension.Types;
 
@@ -8,6 +9,7 @@ class MapType
 
     private MapType() { }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int WriteCount(Memory<byte> buffer, IDictionary? dict)
     {
         if (dict is null)

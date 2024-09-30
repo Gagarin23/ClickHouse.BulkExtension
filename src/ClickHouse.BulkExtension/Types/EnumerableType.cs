@@ -1,7 +1,10 @@
-﻿namespace ClickHouse.BulkExtension.Types;
+﻿using System.Runtime.CompilerServices;
+
+namespace ClickHouse.BulkExtension.Types;
 
 static class EnumerableType<T>
 {
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int WriteCount(Memory<byte> buffer, IEnumerable<T>? enumerable)
     {
         if (enumerable is null)

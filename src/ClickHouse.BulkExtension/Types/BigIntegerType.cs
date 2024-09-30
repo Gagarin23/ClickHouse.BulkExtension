@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using System.Runtime.CompilerServices;
 
 namespace ClickHouse.BulkExtension.Types;
 
@@ -14,6 +15,7 @@ class BigIntegerType
         _size = size;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int Write(Memory<byte> buffer, BigInteger value)
     {
         Span<byte> bigIntBytes = buffer.Span[.._size];

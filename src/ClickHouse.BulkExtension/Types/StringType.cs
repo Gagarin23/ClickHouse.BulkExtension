@@ -1,4 +1,5 @@
 ﻿using System.Buffers;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace ClickHouse.BulkExtension.Types;
@@ -9,6 +10,7 @@ class StringType
 
     private StringType() { }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int Write(Memory<byte> buffer, string value)
     {
         var span = buffer.Span;

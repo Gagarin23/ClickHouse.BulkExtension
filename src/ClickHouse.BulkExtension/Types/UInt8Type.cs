@@ -1,4 +1,6 @@
-﻿namespace ClickHouse.BulkExtension.Types;
+﻿using System.Runtime.CompilerServices;
+
+namespace ClickHouse.BulkExtension.Types;
 
 class UInt8Type
 {
@@ -6,6 +8,7 @@ class UInt8Type
 
     private UInt8Type() { }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int Write(Memory<byte> buffer, byte value)
     {
         buffer.Span[0] = value;

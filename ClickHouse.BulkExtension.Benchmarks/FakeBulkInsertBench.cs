@@ -8,18 +8,18 @@ namespace ClickHouse.BulkExtension.Benchmarks;
 
 | Method                     | Count   | Mean         | Error       | StdDev      |
 |--------------------------- |-------- |-------------:|------------:|------------:|
-| NewBulkInsertInt64         | 10000   |     297.2 us |     5.93 us |    14.21 us |
-| NewGenericBulkInsertEntity | 10000   |   6,438.9 us |   126.51 us |   173.16 us |
-| NewAsyncBulkInsertEntity   | 10000   |   6,678.2 us |   130.85 us |   170.14 us |
-| NewBulkInsertInt64         | 100000  |   3,283.9 us |    64.72 us |    77.05 us |
-| NewGenericBulkInsertEntity | 100000  |  59,262.2 us |   748.88 us |   625.35 us |
-| NewAsyncBulkInsertEntity   | 100000  |  62,320.4 us | 1,131.91 us | 1,058.79 us |
-| NewBulkInsertInt64         | 300000  |   9,439.2 us |   188.74 us |   293.85 us |
-| NewGenericBulkInsertEntity | 300000  | 173,578.8 us |   847.73 us |   751.49 us |
-| NewAsyncBulkInsertEntity   | 300000  | 178,234.9 us |   972.83 us |   812.36 us |
-| NewBulkInsertInt64         | 1000000 |  25,754.8 us |   434.61 us |   406.54 us |
-| NewGenericBulkInsertEntity | 1000000 | 577,101.2 us | 3,267.39 us | 2,896.45 us |
-| NewAsyncBulkInsertEntity   | 1000000 | 601,210.6 us | 6,959.46 us | 6,169.38 us |
+| NewBulkInsertInt64         | 10000   |     268.2 us |     3.63 us |     3.03 us |
+| NewGenericBulkInsertEntity | 10000   |   6,381.5 us |   119.47 us |   122.69 us |
+| NewAsyncBulkInsertEntity   | 10000   |   6,078.7 us |   119.30 us |   111.59 us |
+| NewBulkInsertInt64         | 100000  |   2,934.1 us |    57.90 us |    71.10 us |
+| NewGenericBulkInsertEntity | 100000  |  60,526.7 us |   530.97 us |   470.69 us |
+| NewAsyncBulkInsertEntity   | 100000  |  58,747.7 us |   542.39 us |   423.46 us |
+| NewBulkInsertInt64         | 300000  |   8,583.1 us |   168.59 us |   219.21 us |
+| NewGenericBulkInsertEntity | 300000  | 167,346.8 us |   476.15 us |   371.75 us |
+| NewAsyncBulkInsertEntity   | 300000  | 173,255.3 us | 1,257.96 us | 1,176.70 us |
+| NewBulkInsertInt64         | 1000000 |  25,168.8 us |   473.31 us |   442.73 us |
+| NewGenericBulkInsertEntity | 1000000 | 566,928.2 us | 3,486.72 us | 3,090.88 us |
+| NewAsyncBulkInsertEntity   | 1000000 | 596,145.3 us | 4,116.37 us | 3,437.36 us |
 
  */
 

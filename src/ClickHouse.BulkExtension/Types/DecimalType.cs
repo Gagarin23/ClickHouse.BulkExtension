@@ -1,5 +1,6 @@
 ﻿using System.Numerics;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using ClickHouse.BulkExtension.Numerics;
 
 namespace ClickHouse.BulkExtension.Types;
@@ -20,14 +21,13 @@ readonly struct DecimalType
     /// </summary>
     private int Size => GetSizeFromPrecision(_precision);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int Write(Memory<byte> buffer, decimal value)
     {
-        // Масштабируем значение
         var scaledValue = ScaleDecimal(value, _scale);
 
         switch (_precision)
         {
-            // В зависимости от precision выбираем тип данных
             // Decimal32
             case <= 9:
                 var intValue = decimal.ToInt32(scaledValue);
@@ -36,14 +36,13 @@ readonly struct DecimalType
             case <= 18:
                 var longValue = decimal.ToInt64(scaledValue);
                 return Int64Type.Instance.Write(buffer, longValue);
-            // Используем decimal и записываем 128 бит (16 байт)
+            // Decimal128
             case <= 29:
-                // Получаем биты decimal
                 Decimal128Bits bits = new Decimal128Bits(scaledValue);
 
                 // little-endian
-                var written = UInt64Type.Instance.Write(buffer, bits.Low64);  // Нижние 64 бита
-                written += UInt64Type.Instance.Write(buffer[written..], bits.High64); // Верхние 64 бита
+                var written = UInt64Type.Instance.Write(buffer, bits.Low64);
+                written += UInt64Type.Instance.Write(buffer[written..], bits.High64);
                 return written;
             default:
                 throw new NotSupportedException("Precision is not supported");
@@ -63,6 +62,7 @@ readonly struct DecimalType
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private int GetSizeFromPrecision(int precision)
     {
         return precision switch
@@ -75,6 +75,7 @@ readonly struct DecimalType
         };
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private int WriteBigInteger(Span<byte> buffer, BigInteger value)
     {
         var byteCount = value.GetByteCount();
@@ -97,10 +98,10 @@ readonly struct DecimalType
         return byteCount;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private decimal ScaleDecimal(decimal value, int scale)
     {
-        // Умножаем на 10^scale без использования Math.Pow и выделения памяти
-        decimal scaleFactor = ScaleFactors[scale];
+        var scaleFactor = ScaleFactors[scale];
         return value * scaleFactor;
     }
 

@@ -1,5 +1,6 @@
 using System.Buffers;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using ClickHouse.BulkExtension.Types;
 
 namespace ClickHouse.BulkExtension;
@@ -21,6 +22,12 @@ class ClickHouseWriter : IAsyncDisposable
         _memoryOwner = MemoryPool<byte>.Shared.Rent(bufferSize);
     }
 
+    // Try to inline methods [type_name]Type.Write => WriteAsync => main foreach cycle.
+    // In theory, we will get a single allocated stack frame inside _writeFunction(writer, _source) method,
+    // except UuidType.Write, because it uses a stackalloc function.
+    // As a result, in benchmarks we have a 3-7% cpu-bound performance improvement.
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public async ValueTask WriteStringAsync(string value)
     {
         var required = value.Length * 3;
@@ -35,6 +42,7 @@ class ClickHouseWriter : IAsyncDisposable
         _position += bytesWritten;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public async ValueTask WriteAsync<T>(Func<Memory<byte>, T, int> writeFunction, T value)
     {
         var memory = _memoryOwner.Memory;
