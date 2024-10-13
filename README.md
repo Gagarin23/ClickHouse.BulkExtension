@@ -74,12 +74,23 @@ The library is designed to minimize resource consumption by efficiently streamin
 
 Let's examine the resource consumption during a one-minute operation with a batch of one million records, totaling approximately 100 million records inserted:
 
+*Figure 1: Comparison of memory consumption over the operation period.*
+*BulkExtension:*
 ![Memory Profile 1](https://github.com/Gagarin23/ClickHouse.Client.BulkExtension/blob/main/examples/ClickHouse.BulkExtension.Profiling/memprof_1.png)
-*Figure 1: Memory consumption over the operation period.*
+*ClickHouse.Client.Copy:*
+![Memory Profile 4](https://github.com/Gagarin23/ClickHouse.Client.BulkExtension/blob/main/examples/ClickHouse.BulkExtension.Profiling/memprof_4.png)
+*Figure 2: Comparison of detailed namespace memory allocation analysis.*
+*BulkExtension:*
 ![Memory Profile 2](https://github.com/Gagarin23/ClickHouse.Client.BulkExtension/blob/main/examples/ClickHouse.BulkExtension.Profiling/memprof_2.png)
-*Figure 2: Detailed memory allocation analysis.*
+*ClickHouse.Client.Copy:*
+![Memory Profile 5](https://github.com/Gagarin23/ClickHouse.Client.BulkExtension/blob/main/examples/ClickHouse.BulkExtension.Profiling/memprof_5.png)
+*Figure 3: Comparison of detailed assembly memory allocation analysis.*
+*BulkExtension:*
+![Memory Profile 3](https://github.com/Gagarin23/ClickHouse.Client.BulkExtension/blob/main/examples/ClickHouse.BulkExtension.Profiling/memprof_3.png)
+*ClickHouse.Client.Copy:*
+![Memory Profile 6](https://github.com/Gagarin23/ClickHouse.Client.BulkExtension/blob/main/examples/ClickHouse.BulkExtension.Profiling/memprof_6.png)
 
-For profiling, a structure with three fields and a total size of 24 bytes was used. Given the total insertion of 100 million records, the payload traffic amounts to approximately 2.4 gigabytes. The screenshots show the library's memory consumption over the entire period of operation—200.6 kilobytes—which is about 0.008% of the total payload traffic.
+For profiling, a structure with three fields and a total size of 24 bytes was used. Given the total insertion of 100 million records, the payload traffic amounts to approximately 2.4 gigabytes. The screenshots show the library's memory consumption over the entire period of operation—216 kilobytes—which is about 0.008% of the total payload traffic.
 
 The test console utility and the profiling file are located in the [ClickHouse.BulkExtension.Profiling](https://github.com/Gagarin23/ClickHouse.Client.BulkExtension/tree/main/examples/ClickHouse.BulkExtension.Profiling) folder (`ClickHouse.BulkExtension.Profiling.dmw` for dotMemory).
 

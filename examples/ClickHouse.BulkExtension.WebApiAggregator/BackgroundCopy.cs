@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using System.Runtime.CompilerServices;
 using System.Threading.Channels;
 using ClickHouse.BulkExtension;
 using ClickHouse.BulkExtension.Annotation;
@@ -72,7 +73,7 @@ CREATE TABLE IF NOT EXISTS test_table
         }
     }
 
-    private async IAsyncEnumerable<YourStructType> GetBatchAsync(ChannelReader<YourStructType> reader, CancellationToken cancellationToken)
+    private async IAsyncEnumerable<YourStructType> GetBatchAsync(ChannelReader<YourStructType> reader, [EnumeratorCancellation]CancellationToken cancellationToken)
     {
         var stopwatch = Stopwatch.StartNew();
 

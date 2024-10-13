@@ -11,4 +11,8 @@
       <ProjectReference Include="..\..\src\ClickHouse.Client.BulkExtension\ClickHouse.Client.BulkExtension.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="ClickHouse.Client" Version="7.8.1" />
+    </ItemGroup>
+
 </Project>
