@@ -9,6 +9,8 @@ public class ComplexTableType
     public Guid GuidColumn { get; set; }
     public bool BooleanColumn { get; set; }
     public string StringColumn { get; set; } = null!;
+    public byte[] BytesColumn { get; set; } = null!;
+    public Memory<byte> MemoryColumn { get; set; }
 
     [ClickHouseColumn(Precision = 16, Scale = 6)]
     public decimal DecimalColumn { get; set; }

@@ -11,6 +11,7 @@ partial class ClickHouseWriter : IAsyncDisposable
 
     public static readonly MethodInfo WriteMethod = typeof(ClickHouseWriter).GetMethod(nameof(WriteAsync), BindingFlags.Public | BindingFlags.Instance)!;
     public static readonly MethodInfo StringWriteMethod = typeof(ClickHouseWriter).GetMethod(nameof(WriteStringAsync), BindingFlags.Public | BindingFlags.Instance)!;
+    public static readonly MethodInfo WriteBytesMethod = typeof(ClickHouseWriter).GetMethod(nameof(WriteBytesAsync), BindingFlags.Public | BindingFlags.Instance)!;
 
     private readonly Stream _underlyingStream;
     private IMemoryOwner<byte> _memoryOwner;
@@ -34,6 +35,21 @@ partial class ClickHouseWriter : IAsyncDisposable
         }
 
         var bytesWritten = StringType.Instance.Write(_memoryOwner.Memory[_position..], value);
+        _position += bytesWritten;
+    }
+
+    [AsyncMethodBuilder(typeof(PoolingAsyncValueTaskMethodBuilder))]
+    public async ValueTask WriteBytesAsync(Memory<byte> value)
+    {
+        var required = value.Length + 4; // 4 bytes for length
+        var bufferLength = _memoryOwner.Memory.Length;
+        if (required >= bufferLength - _position)
+        {
+            await FlushAsync();
+            Resize(required + bufferLength);
+        }
+
+        var bytesWritten = ByteArray.Instance.Write(_memoryOwner.Memory[_position..], value);
         _position += bytesWritten;
     }
 

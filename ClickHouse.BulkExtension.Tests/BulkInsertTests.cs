@@ -43,6 +43,8 @@ public class BulkInsertTests
     }
 
     private const string StringForNoAlloc = "String";
+    private static readonly byte[] BytesForNoAlloc = Enumerable.Range(0, 255).Select(x => (byte)x).ToArray();
+    private static readonly byte[] BytesForNoAlloc2 = Enumerable.Range(0, 256).Select(x => (byte)x).ToArray();
 
     private static ComplexTableType GetEntity(int i)
     {
@@ -51,6 +53,8 @@ public class BulkInsertTests
             GuidColumn = Guid.NewGuid(),
             BooleanColumn = i % 2 == 0,
             StringColumn = StringForNoAlloc,
+            MemoryColumn = BytesForNoAlloc.AsMemory(),
+            BytesColumn = i % 2 == 0 ? BytesForNoAlloc : BytesForNoAlloc2,
             DecimalColumn = i + 0.1m,
             DoubleColumn = i + 0.2,
             FloatColumn = i + 0.3f,
@@ -85,7 +89,9 @@ CREATE TABLE IF NOT EXISTS test_bulk_insert
 (
     Qwerty UUID,
     BooleanColumn bool,
-    StringColumn nvarchar,
+    StringColumn String,
+    BytesColumn Array(UInt8),
+    MemoryColumn Array(UInt8),
     DecimalColumn decimal(18, 6),
     DoubleColumn Float64,
     FloatColumn Float32,

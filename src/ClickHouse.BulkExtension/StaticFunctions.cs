@@ -255,6 +255,21 @@ static class StaticFunctions
                 )
                 .Await();
         }
+        else if (elementType == typeof(byte[]) || elementType == typeof(Memory<byte>) || elementType == typeof(ReadOnlyMemory<byte>))
+        {
+            Expression parameterExpression = getExpression;
+            if (elementType == typeof(byte[]))
+            {
+                parameterExpression = Expression.Call(null, ByteArray.AsMemoryMethod, getExpression);
+            }
+            writeExpression = Expression.Call
+                (
+                    writerParameter,
+                    ClickHouseWriter.WriteBytesMethod,
+                    parameterExpression
+                )
+                .Await();
+        }
         else if (elementType.IsEnum)
         {
             var size = Enum.GetValues(elementType).Length;
