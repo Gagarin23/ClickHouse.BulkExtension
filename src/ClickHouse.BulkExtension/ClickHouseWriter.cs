@@ -5,7 +5,7 @@ using ClickHouse.BulkExtension.Types;
 
 namespace ClickHouse.BulkExtension;
 
-class ClickHouseWriter : IAsyncDisposable
+partial class ClickHouseWriter : IAsyncDisposable
 {
     private const int BufferThreshold = 64;
 
@@ -22,12 +22,7 @@ class ClickHouseWriter : IAsyncDisposable
         _memoryOwner = MemoryPool<byte>.Shared.Rent(bufferSize);
     }
 
-    // Try to inline methods [type_name]Type.Write => WriteAsync => main foreach cycle.
-    // In theory, we will get a single allocated stack frame inside _writeFunction(writer, _source) method,
-    // except UuidType.Write, because it uses a stackalloc function.
-    // As a result, in benchmarks we have a 3-7% cpu-bound performance improvement.
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [AsyncMethodBuilder(typeof(PoolingAsyncValueTaskMethodBuilder))]
     public async ValueTask WriteStringAsync(string value)
     {
         var required = value.Length * 3;
@@ -42,7 +37,7 @@ class ClickHouseWriter : IAsyncDisposable
         _position += bytesWritten;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [AsyncMethodBuilder(typeof(PoolingAsyncValueTaskMethodBuilder))]
     public async ValueTask WriteAsync<T>(Func<Memory<byte>, T, int> writeFunction, T value)
     {
         var memory = _memoryOwner.Memory;
@@ -55,13 +50,15 @@ class ClickHouseWriter : IAsyncDisposable
         _position += written;
     }
 
+    [AsyncMethodBuilder(typeof(PoolingAsyncValueTaskMethodBuilder))]
     public async ValueTask DisposeAsync()
     {
         await FlushAsync();
         _memoryOwner.Dispose();
     }
 
-    private async Task FlushAsync()
+    [AsyncMethodBuilder(typeof(PoolingAsyncValueTaskMethodBuilder))]
+    private async ValueTask FlushAsync()
     {
         if (_position == 0)
         {

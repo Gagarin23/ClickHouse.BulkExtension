@@ -30,7 +30,7 @@ public class ClickHouseAsyncCopy<T>
     private readonly Func<ClickHouseWriter, IAsyncEnumerable<T>, Task> _writeFunction;
     private readonly string _query;
 
-    private IAsyncEnumerable<T> _source;
+    private IAsyncEnumerable<T> _source = null!;
     private bool _useCompression;
     private int _bufferSize;
 

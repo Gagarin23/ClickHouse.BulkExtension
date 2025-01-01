@@ -92,13 +92,14 @@ public class FakeBulkInsertBench
     }
 
     [GlobalSetup]
-    public async Task GlobalSetup()
+    public Task GlobalSetup()
     {
         _newBulkCopyInt = new ClickHouseCopy<Int64Wrapper>("benchmark_bulk_insert_int64", ["Value"]);
         _newGenericBulkCopyEntity = new ClickHouseCopy<PrimitiveTableType>("benchmark_bulk_insert_entity", _columns);
         _newAsyncBulkCopyEntity = new ClickHouseAsyncCopy<PrimitiveTableType>("benchmark_bulk_insert_entity", _columns);
 
         _buffer = new Memory<byte>(new byte[4096]);
+        return Task.CompletedTask;
     }
 
     [Benchmark]

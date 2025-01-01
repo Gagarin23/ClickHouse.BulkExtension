@@ -8,7 +8,7 @@ public class ComplexTableType
     [ClickHouseColumn(Name = "Qwerty")]
     public Guid GuidColumn { get; set; }
     public bool BooleanColumn { get; set; }
-    public string StringColumn { get; set; }
+    public string StringColumn { get; set; } = null!;
 
     [ClickHouseColumn(Precision = 16, Scale = 6)]
     public decimal DecimalColumn { get; set; }
@@ -28,8 +28,8 @@ public class ComplexTableType
 
     [ClickHouseColumn(DateTimePrecision = DateTimePrecision.Microsecond)]
     public DateTime DateTimeColumn { get; set; }
-    public IEnumerable<int> ArrayColumn { get; set; }
-    public Dictionary<int, string> MapColumn { get; set; }
-    public Tuple<string, int, long> TupleColumn { get; set; }
+    public IEnumerable<int> ArrayColumn { get; set; } = null!;
+    public Dictionary<int, string> MapColumn { get; set; } = null!;
+    public Tuple<string, int, long> TupleColumn { get; set; } = null!;
     public (string S, int X, long Y) ValueTupleColumn { get; set; }
 }

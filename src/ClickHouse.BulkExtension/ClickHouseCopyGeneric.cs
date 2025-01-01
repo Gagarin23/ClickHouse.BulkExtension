@@ -30,7 +30,7 @@ public class ClickHouseCopy<T>
     private readonly Func<ClickHouseWriter, IEnumerable<T>, Task> _writeFunction;
     private readonly string _query;
 
-    private IEnumerable<T> _source;
+    private IEnumerable<T> _source = null!;
     private bool _useCompression;
     private int _bufferSize;
 
