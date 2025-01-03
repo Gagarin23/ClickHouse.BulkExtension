@@ -33,7 +33,7 @@ class ByteArray
         {
             written = buffer.Write7BitEncodedInt(value.Length);
         }
-        value.Span.CopyTo(span[written..]);
+        value.Span.CopyTo(span);
         return value.Length + written;
     }
 }

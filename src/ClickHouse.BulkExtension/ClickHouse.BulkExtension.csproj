@@ -11,7 +11,7 @@
         <RepositoryUrl>https://github.com/Gagarin23/ClickHouse.Client.BulkExtension</RepositoryUrl>
         <RepositoryType>github</RepositoryType>
         <PackageReadmeFile>README.md</PackageReadmeFile>
-        <Version>2.1.0</Version>
+        <Version>2.1.1</Version>
         <IncludeSymbols>true</IncludeSymbols>
         <IncludeSource>true</IncludeSource>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
