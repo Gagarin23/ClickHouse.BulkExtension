@@ -66,7 +66,8 @@ public class BulkInsertTests
             BigIntegerU128Column = BigInteger.Pow(2, 128) - 1,
             BigIntegerU256Column = BigInteger.Pow(2, 256) - 1,
             DateTimeColumn = DateTime.Now.AddMinutes(i),
-            ArrayColumn = Enumerable.Range(0, (i % 3) + 1).Select(y => y).ToList(),
+            ArrayInt32Column = Enumerable.Range(0, (i % 3) + 1).Select(y => y).ToList(),
+            ArrayStringColumn = Enumerable.Range(0, (i % 3) + 1).Select(y => y.ToString()).ToList(),
             MapColumn = Enumerable.Range(0, (i % 3) + 1).ToDictionary(y => y, y => StringForNoAlloc),
             TupleColumn = new Tuple<string, int, long>(StringForNoAlloc, i, i),
             ValueTupleColumn = (StringForNoAlloc, i, i)
@@ -103,7 +104,8 @@ CREATE TABLE IF NOT EXISTS test_bulk_insert
     BigIntegerU128Column UInt128,
     BigIntegerU256Column UInt256,
     DateTimeColumn datetime64(6),
-    ArrayColumn Array(Int32),
+    ArrayInt32Column Array(Int32),
+    ArrayStringColumn Array(String),
     MapColumn Map(Int32, String),
     TupleColumn Tuple(s String, i32 Int32, i64 Int64),
     ValueTupleColumn Tuple(s String, i32 Int32, i64 Int64)

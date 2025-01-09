@@ -30,7 +30,8 @@ public class ComplexTableType
 
     [ClickHouseColumn(DateTimePrecision = DateTimePrecision.Microsecond)]
     public DateTime DateTimeColumn { get; set; }
-    public IEnumerable<int> ArrayColumn { get; set; } = null!;
+    public IEnumerable<int> ArrayInt32Column { get; set; } = null!;
+    public IEnumerable<string> ArrayStringColumn { get; set; } = null!;
     public Dictionary<int, string> MapColumn { get; set; } = null!;
     public Tuple<string, int, long> TupleColumn { get; set; } = null!;
     public (string S, int X, long Y) ValueTupleColumn { get; set; }
